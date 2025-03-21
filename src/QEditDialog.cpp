@@ -1,0 +1,430 @@
+#include "QEditDialog.h"
+#include <QGridLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QTextEdit>
+#include <QPlainTextEdit>
+#include <QTextBrowser>
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QStackedWidget>
+#include <QStackedLayout>
+#include <QRegExp>
+#include <QRgba64>
+#include "QResArscParser.h"
+
+QEditDialog::QEditDialog(QWidget* _parent)
+	: QDialog(_parent)
+{
+	CreateControl();
+	RetranslateUi();
+}
+
+QEditDialog::~QEditDialog()
+{
+}
+void QEditDialog::RetranslateUi(void)
+{
+	setWindowTitle(tr("EditDialog"));
+	m_LB_ID->setText(tr("ID:"));
+	m_LB_Name->setText(tr("Name:"));
+	m_LB_Type->setText(tr("Type:"));
+	m_LB_Value->setText(tr("Value:"));
+	m_CB_ShowRichText->setText(tr("ShowRichText"));
+	m_LE_Color->setPlaceholderText(tr("0x02468ACE"));
+	m_LE_Digital->setPlaceholderText(tr("decimal numerical value"));
+	m_LE_Hex->setPlaceholderText(tr("0x02468ACE"));
+	m_LE_Reference->setPlaceholderText(tr("0x7F010001"));
+}
+void QEditDialog::CreateControl(void)
+{
+	setObjectName(QString::fromUtf8("QEditDialog"));
+	resize(500, 320);
+	QGridLayout* t_mainLayout = new QGridLayout(this);
+	t_mainLayout->setObjectName(QString::fromUtf8("t_mainLayout"));
+	m_LB_ID = new QLabel(this);
+	m_LB_ID->setObjectName(QString::fromUtf8("m_LB_ID"));
+
+	t_mainLayout->addWidget(m_LB_ID, 0, 0, 1, 1);
+
+	m_LE_ID = new QLineEdit(this);
+	m_LE_ID->setObjectName(QString::fromUtf8("m_LE_ID"));
+	m_LE_ID->setReadOnly(true);
+
+	t_mainLayout->addWidget(m_LE_ID, 0, 1, 1, 1);
+
+	m_LB_Name = new QLabel(this);
+	m_LB_Name->setObjectName(QString::fromUtf8("m_LB_Name"));
+
+	t_mainLayout->addWidget(m_LB_Name, 1, 0, 1, 1);
+
+	m_LE_Name = new QLineEdit(this);
+	m_LE_Name->setObjectName(QString::fromUtf8("m_LE_Name"));
+
+	t_mainLayout->addWidget(m_LE_Name, 1, 1, 1, 1);
+
+	m_LB_Type = new QLabel(this);
+	m_LB_Type->setObjectName(QString::fromUtf8("m_LB_Type"));
+
+	t_mainLayout->addWidget(m_LB_Type, 2, 0, 1, 1);
+
+	m_CB_Type = new QComboBox(this);
+	m_CB_Type->setObjectName(QString::fromUtf8("m_CB_Type"));
+
+	t_mainLayout->addWidget(m_CB_Type, 2, 1, 1, 1);
+
+	m_LB_Value = new QLabel(this);
+	m_LB_Value->setObjectName(QString::fromUtf8("m_LB_Value"));
+	m_LB_Value->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
+
+	t_mainLayout->addWidget(m_LB_Value, 3, 0, 1, 1);
+
+	m_stackedLayout = new QStackedLayout(this);
+	m_stackedLayout->setObjectName(QString::fromUtf8("m_stackedLayout"));
+
+	t_mainLayout->addLayout(m_stackedLayout, 3, 1, 1, 1);
+
+	m_buttonBox = new QDialogButtonBox(this);
+	m_buttonBox->setObjectName(QString::fromUtf8("m_buttonBox"));
+	m_buttonBox->setOrientation(Qt::Horizontal);
+	m_buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+
+	t_mainLayout->addWidget(m_buttonBox, 4, 0, 1, 2);
+
+	//----------------0
+	QWidget* t_W_String = new QWidget(this);
+	t_W_String->setObjectName(QString::fromUtf8("t_W_String"));
+	QGridLayout* t_gLayout_String = new QGridLayout(t_W_String);
+	t_gLayout_String->setObjectName(QString::fromUtf8("t_gLayout_String"));
+	t_gLayout_String->setContentsMargins(0, 0, 0, 0);
+	t_gLayout_String->setSpacing(0);
+
+	m_SW_String = new QStackedWidget(t_W_String);
+	m_SW_String->setObjectName(QString::fromUtf8("t_SW_String"));
+	m_TE_String = new QPlainTextEdit();
+	m_TE_String->setObjectName(QString::fromUtf8("m_TE_String"));
+	m_SW_String->addWidget(m_TE_String);
+
+	m_TB_String = new QTextBrowser();
+	m_TB_String->setObjectName(QString::fromUtf8("m_TB_String"));
+	m_TB_String->setLineWrapMode(QTextEdit::NoWrap);
+	m_SW_String->addWidget(m_TB_String);
+
+	t_gLayout_String->addWidget(m_SW_String, 0, 0, 1, 2);
+
+	QSpacerItem* t_hSpacer_String = new QSpacerItem(367, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+	t_gLayout_String->addItem(t_hSpacer_String, 1, 0, 1, 1);
+
+	m_CB_ShowRichText = new QCheckBox(t_W_String);
+	m_CB_ShowRichText->setObjectName(QString::fromUtf8("m_CB_ShowRichText"));
+
+	t_gLayout_String->addWidget(m_CB_ShowRichText, 1, 1, 1, 1);
+	m_stackedLayout->addWidget(t_W_String);
+	//----------------1
+	QWidget* t_W_Color = new QWidget(this);
+	t_W_Color->setObjectName(QString::fromUtf8("t_W_Color"));
+	QGridLayout* t_gLayout_Color = new QGridLayout(t_W_Color);
+	t_gLayout_Color->setObjectName(QString::fromUtf8("t_gridLayout_Color"));
+	t_gLayout_Color->setContentsMargins(0, 0, 0, 0);
+	m_LE_Color = new QLineEdit(t_W_Color);
+	m_LE_Color->setObjectName(QString::fromUtf8("m_LE_Color"));
+
+	t_gLayout_Color->addWidget(m_LE_Color, 0, 0, 1, 2);
+
+	QSpacerItem* t_hSpacer_Color = new QSpacerItem(213, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+	t_gLayout_Color->addItem(t_hSpacer_Color, 1, 0, 1, 1);
+
+	m_LB_Color = new QLabel(t_W_Color);
+	m_LB_Color->setObjectName(QString::fromUtf8("m_LB_Color"));
+	m_LB_Color->setMinimumSize(QSize(32, 32));
+	m_LB_Color->setMaximumSize(QSize(32, 32));
+
+	t_gLayout_Color->addWidget(m_LB_Color, 1, 1, 1, 1);
+
+	QSpacerItem* t_vSpacer_Color = new QSpacerItem(20, 51, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+	t_gLayout_Color->addItem(t_vSpacer_Color, 2, 0, 1, 1);
+	m_stackedLayout->addWidget(t_W_Color);
+	//----------------2
+	QWidget* t_W_Digital = new QWidget(this);
+	t_W_Digital->setObjectName(QString::fromUtf8("t_W_Digital"));
+	QVBoxLayout* t_vLayout_Digital = new QVBoxLayout(t_W_Digital);
+	t_vLayout_Digital->setObjectName(QString::fromUtf8("t_vLayout_Digital"));
+	t_vLayout_Digital->setContentsMargins(0, 0, 0, 0);
+	m_LE_Digital = new QLineEdit(t_W_Digital);
+	m_LE_Digital->setObjectName(QString::fromUtf8("m_LE_Digital"));
+
+	t_vLayout_Digital->addWidget(m_LE_Digital);
+
+	QSpacerItem* t_vSpacer_Digital = new QSpacerItem(20, 89, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+	t_vLayout_Digital->addItem(t_vSpacer_Digital);
+	m_stackedLayout->addWidget(t_W_Digital);
+	//----------------3
+	QWidget* t_W_Hex = new QWidget(this);
+	t_W_Hex->setObjectName(QString::fromUtf8("t_W_Hex"));
+	QVBoxLayout* t_vLayout_Hex = new QVBoxLayout(t_W_Hex);
+	t_vLayout_Hex->setObjectName(QString::fromUtf8("t_vLayout_Hex"));
+	t_vLayout_Hex->setContentsMargins(0, 0, 0, 0);
+	m_LE_Hex = new QLineEdit(t_W_Hex);
+	m_LE_Hex->setObjectName(QString::fromUtf8("m_LE_Hex"));
+
+	t_vLayout_Hex->addWidget(m_LE_Hex);
+
+	QSpacerItem* t_vSpacer_Hex = new QSpacerItem(20, 89, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+	t_vLayout_Hex->addItem(t_vSpacer_Hex);
+	m_stackedLayout->addWidget(t_W_Hex);
+	//----------------4
+	QWidget* t_W_Boolen = new QWidget(this);
+	t_W_Boolen->setObjectName(QString::fromUtf8("t_W_Boolen"));
+	QVBoxLayout* t_vLayout_Boolen = new QVBoxLayout(t_W_Boolen);
+	t_vLayout_Boolen->setObjectName(QString::fromUtf8("t_vLayout_Boolen"));
+	t_vLayout_Boolen->setContentsMargins(0, 0, 0, 0);
+	m_CB_Boolen = new QComboBox(t_W_Boolen);
+	m_CB_Boolen->setObjectName(QString::fromUtf8("m_CB_Boolen"));
+
+	t_vLayout_Boolen->addWidget(m_CB_Boolen);
+
+	QSpacerItem* t_vSpacer_Boolen = new QSpacerItem(20, 89, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+	t_vLayout_Boolen->addItem(t_vSpacer_Boolen);
+	m_stackedLayout->addWidget(t_W_Boolen);
+	//----------------5
+	QWidget* t_W_Reference = new QWidget(this);
+	t_W_Reference->setObjectName(QString::fromUtf8("t_W_Reference"));
+
+	QVBoxLayout* t_vLayout_Reference = new QVBoxLayout(t_W_Reference);
+	t_vLayout_Reference->setObjectName(QString::fromUtf8("t_vLayout_Reference"));
+	t_vLayout_Reference->setContentsMargins(0, 0, 0, 0);
+	m_LE_Reference = new QLineEdit(t_W_Reference);
+	m_LE_Reference->setObjectName(QString::fromUtf8("m_LE_Reference"));
+
+	t_vLayout_Reference->addWidget(m_LE_Reference);
+
+	m_TE_Reference = new QTextEdit(t_W_Reference);
+	m_TE_Reference->setObjectName(QString::fromUtf8("m_TE_Reference"));
+	m_TE_Reference->setReadOnly(true);
+	m_TE_Reference->setLineWrapMode(QTextEdit::NoWrap);
+
+	t_vLayout_Reference->addWidget(m_TE_Reference);
+	m_stackedLayout->addWidget(t_W_Reference);
+	//----------------
+	QObject::connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+	QObject::connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+	connect(m_CB_Type, SIGNAL(currentIndexChanged(int)), this, SLOT(onTypeCurrentIndexChanged_slot(int)));
+	connect(m_stackedLayout, SIGNAL(currentChanged(int)), this, SLOT(onStackedCurrentChanged_slot(int)));
+	connect(m_LE_Color, SIGNAL(textChanged(const QString&)), this, SLOT(onColorTextChanged_slot(const QString&)));
+	connect(m_LE_Reference, SIGNAL(textChanged(const QString&)), this, SLOT(onReferenceTextChanged_slot(const QString&)));
+	connect(m_CB_ShowRichText, SIGNAL(stateChanged(int)), this, SLOT(onShowRichTextStateChanged_slot(int)));
+	//--------------------------------------------------------
+	m_CB_Type->addItem("Reference", (uint32_t)Res_value::_DataType::TYPE_REFERENCE);		//0x01
+	m_CB_Type->addItem("Attribute", (uint32_t)Res_value::_DataType::TYPE_ATTRIBUTE);		//0x02
+	m_CB_Type->addItem("String", (uint32_t)Res_value::_DataType::TYPE_STRING);				//0x03
+	m_CB_Type->addItem("Float", (uint32_t)Res_value::_DataType::TYPE_FLOAT);				//0x04
+	m_CB_Type->addItem("Dimension", (uint32_t)Res_value::_DataType::TYPE_DIMENSION);		//0x05
+	m_CB_Type->addItem("Fraction", (uint32_t)Res_value::_DataType::TYPE_FRACTION);			//0x06
+	m_CB_Type->addItem("Dynamic_Reference", (uint32_t)Res_value::_DataType::TYPE_DYNAMIC_REFERENCE);	//0x07
+	m_CB_Type->addItem("Int_Dec", (uint32_t)Res_value::_DataType::TYPE_INT_DEC);			//0x10
+	m_CB_Type->addItem("Int_Hex", (uint32_t)Res_value::_DataType::TYPE_INT_HEX);			//0x11
+	m_CB_Type->addItem("Boolean", (uint32_t)Res_value::_DataType::TYPE_INT_BOOLEAN);		//0x12
+	m_CB_Type->addItem("Color_ARGB8", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB8);//0x1c
+	m_CB_Type->addItem("Color_RGB8", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB8);	//0x1d
+	m_CB_Type->addItem("Color_ARGB4", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB4);//0x1e
+	m_CB_Type->addItem("Color_RGB4", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB4);	//0x1f
+
+	m_CB_Boolen->addItem("false", 0);
+	m_CB_Boolen->addItem("true", 1);
+	//--------------------------------------------------------
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_REFERENCE, 5);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_ATTRIBUTE, 3);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_STRING, 0);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_FLOAT, 2);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DIMENSION, 2);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_FRACTION, 2);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DYNAMIC_REFERENCE, 5);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_DEC, 2);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_HEX, 3);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_BOOLEAN, 4);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB8, 1);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB8, 1);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB4, 1);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB4, 1);
+}
+void QEditDialog::setResArscParser(QResArscParser* _p)
+{
+	m_ResArscParser = _p;
+}
+void QEditDialog::setData(const ResTable_config& _config, uint32_t _type, uint32_t _data)
+{
+	m_config = _config;
+	m_type = _type;
+	m_data = _data;
+	int t_newIdx = m_CB_Type->findData(_type);
+	if (t_newIdx == m_CB_Type->currentIndex())
+		onTypeCurrentIndexChanged_slot(t_newIdx);
+	else
+		m_CB_Type->setCurrentIndex(t_newIdx);
+}
+void QEditDialog::onTypeCurrentIndexChanged_slot(int _index)
+{
+	if (_index < 0)
+		return;
+	uint32_t t_type = m_CB_Type->currentData().toUInt();
+	int t_page = m_Type2Page[t_type];
+	if (m_stackedLayout->currentIndex() != t_page)
+		m_stackedLayout->setCurrentIndex(m_Type2Page[t_type]);
+	else
+		onStackedCurrentChanged_slot(t_page);
+}
+void QEditDialog::onStackedCurrentChanged_slot(int _index)
+{
+	Res_value t_value;
+	t_value.data = m_data;
+	t_value.dataType = Res_value::_DataType(m_CB_Type->currentData().toUInt());
+	switch (_index)
+	{
+	case 0:
+		m_TE_String->setPlainText(m_ResArscParser->resValue2String(t_value));
+		break;
+	case 1:
+		m_LE_Color->setText(m_ResArscParser->resValue2String(t_value));
+		break;
+	case 2:
+		m_LE_Digital->setText(m_ResArscParser->resValue2String(t_value));
+		break;
+	case 3:
+		m_LE_Hex->setText(m_ResArscParser->resValue2String(t_value));
+		break;
+	case 4:
+		m_CB_Boolen->setCurrentIndex(m_data == 0 ? 0 : 1);
+		break;
+	case 5:
+		m_LE_Reference->setText(m_ResArscParser->resValue2String(t_value));
+		break;
+	}
+}
+QRegExp g_hexRegExp(".?0[xX]([0-9a-fA-F]{8})");
+uint32_t getHexTextData(const QString& _str, bool* _ok)
+{
+	int t_index = g_hexRegExp.indexIn(_str);
+	if (t_index < 0)
+	{
+		if (_ok != NULL)
+			*_ok = false;
+		return 0;
+	}
+	if (_ok != NULL)
+		*_ok = true;
+	return g_hexRegExp.capturedTexts()[1].toUInt(NULL, 16);
+}
+void QEditDialog::onColorTextChanged_slot(const QString& _text)
+{
+	bool t_ok;
+	uint32_t t_data = getHexTextData(_text, &t_ok);
+	if (!t_ok)
+		return;
+
+	QPixmap t_pixmap(32, 32);
+	t_pixmap.fill(QColor(QRgba64::fromArgb32(t_data)));
+	m_LB_Color->setPixmap(t_pixmap);
+}
+void QEditDialog::onReferenceTextChanged_slot(const QString& _text)
+{
+	bool t_ok;
+	uint32_t t_data = getHexTextData(_text, &t_ok);
+	if (!t_ok)
+		return;
+
+	m_TE_Reference->setText(m_ResArscParser->getReferenceDestination(m_config, t_data));
+}
+void QEditDialog::onShowRichTextStateChanged_slot(int)
+{
+	QString t_text = m_TE_String->toPlainText();
+	if (t_text.indexOf("</") >= 0)
+		t_text.replace(QString("\\n"), QString("<br>"));
+	else
+		t_text.replace(QString("\\n"), QChar(0x0A));
+	m_TB_String->setText(t_text);
+
+	m_SW_String->setCurrentIndex(m_CB_ShowRichText->isChecked() ? 1 : 0);
+}
+uint32_t QEditDialog::getType(void)
+{
+	return m_CB_Type->currentData().toUInt();
+}
+
+float G_MULT[] = { 1.0, 128.0, 256, 256 };
+uint32_t complexToUint2(float _value)
+{
+	float t_value = _value / MANTISSA_MULT;
+	int t_multIdx = 0;
+	//最后2位是0，就不用再乘了，大于 float(0xFFFFFF)再乘就溢出了，没有数可乘了。
+	while ((int(t_value) & 0xFF) != 0 && t_value <= float(0xFFFFFF) && t_multIdx < _countof(G_MULT) - 1)
+	{
+		t_value *= G_MULT[++t_multIdx];
+	}
+	return uint32_t(t_value) & 0xFFFFFF00 | (t_multIdx << 4);
+}
+QRegExp g_DFRegExp("^([\\-0-9\\.]+)([%A-Za-z]*)$");
+uint32_t getDimensionFractionData(float _v, float _divisor, const QString& _e, const char* _suffix[], int _suffixCount)
+{
+	uint32_t t_value = complexToUint2(_v / _divisor);
+	for (int i = 0; i < _suffixCount; ++i)
+	{
+		if (_e == QString(_suffix[i]))
+		{
+			t_value |= i;
+			return t_value;
+		}
+	}
+	return 0;
+}
+uint32_t QEditDialog::getData(void)
+{
+	Res_value::_DataType t_dataType = Res_value::_DataType(m_CB_Type->currentData().toUInt());
+
+	switch (t_dataType)
+	{
+	case Res_value::_DataType::TYPE_STRING:
+		Q_ASSERT(false);
+		return 0;
+	case Res_value::_DataType::TYPE_INT_COLOR_ARGB8:
+	case Res_value::_DataType::TYPE_INT_COLOR_RGB8:
+	case Res_value::_DataType::TYPE_INT_COLOR_ARGB4:
+	case Res_value::_DataType::TYPE_INT_COLOR_RGB4:
+		return getHexTextData(m_LE_Color->text(), NULL);
+	case Res_value::_DataType::TYPE_INT_DEC:
+		return m_LE_Digital->text().toUInt(NULL, 10);
+	case Res_value::_DataType::TYPE_FLOAT:
+		{
+			float t_f = m_LE_Digital->text().toFloat();
+			return *reinterpret_cast<uint32_t*>(&t_f);
+		}
+	case Res_value::_DataType::TYPE_DIMENSION:
+		if (g_DFRegExp.indexIn(m_LE_Digital->text()) == 0)
+			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 1, g_DFRegExp.capturedTexts()[2], DIMENSION_UNIT_STRS, 6);
+		return 0;
+	case Res_value::_DataType::TYPE_FRACTION:
+		if (g_DFRegExp.indexIn(m_LE_Digital->text()) == 0)
+			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 100, g_DFRegExp.capturedTexts()[2], FRACTION_UNIT_STRS, 2);
+		return 0;
+	case Res_value::_DataType::TYPE_ATTRIBUTE:
+	case Res_value::_DataType::TYPE_INT_HEX:
+		return getHexTextData(m_LE_Hex->text(), NULL);
+	case Res_value::_DataType::TYPE_INT_BOOLEAN:
+		return m_CB_Boolen->currentData().toUInt();
+	case Res_value::_DataType::TYPE_REFERENCE:
+	case Res_value::_DataType::TYPE_DYNAMIC_REFERENCE:
+		return getHexTextData(m_LE_Reference->text(), NULL);
+	default:
+		return 0;
+	}
+}
+QString QEditDialog::getSData(void)
+{
+	return m_TE_String->toPlainText();
+}

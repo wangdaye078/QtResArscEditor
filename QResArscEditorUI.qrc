@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="/res">
+    <file>res/public-final.xml</file>
+  </qresource>
+  <qresource prefix="/icon">
+    <file>ico/save.png</file>
+    <file>ico/open.png</file>
+  </qresource>
+</RCC>

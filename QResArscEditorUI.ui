@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QResArscEditorUIClass</class>
+ <widget class="QDialog" name="QResArscEditorUIClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>740</width>
+    <height>503</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>宋体</family>
+    <pointsize>9</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>QResArscEditorUI</string>
+  </property>
+  <layout class="QGridLayout" name="t_mainLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="m_LB_filePath">
+     <property name="text">
+      <string>filePath:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="m_LE_filePath">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QToolButton" name="m_TB_open">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="QResArscEditorUI.qrc">
+       <normaloff>:/icon/ico/open.png</normaloff>:/icon/ico/open.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="3">
+    <widget class="QToolButton" name="m_TB_save">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="QResArscEditorUI.qrc">
+       <normaloff>:/icon/ico/save.png</normaloff>:/icon/ico/save.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="4">
+    <widget class="QSplitter" name="t_splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QTreeWidget" name="m_TW_tree">
+      <property name="indentation">
+       <number>13</number>
+      </property>
+      <attribute name="headerVisible">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </column>
+      <item>
+       <property name="text">
+        <string>1111</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>1111</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>2222</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QTreeWidget" name="m_TW_value">
+      <property name="contextMenuPolicy">
+       <enum>Qt::CustomContextMenu</enum>
+      </property>
+      <property name="indentation">
+       <number>10</number>
+      </property>
+      <property name="columnCount">
+       <number>3</number>
+      </property>
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string notr="true">2</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string notr="true">3</string>
+       </property>
+      </column>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="QResArscEditorUI.qrc"/>
+ </resources>
+ <connections/>
+</ui>
