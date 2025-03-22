@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="/res">
     <file>res/public-final.xml</file>
+    <file>res/locale.txt</file>
   </qresource>
   <qresource prefix="/icon">
     <file>ico/save.png</file>

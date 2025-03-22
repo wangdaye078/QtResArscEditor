@@ -122,7 +122,7 @@ struct ResTable_typeSpec
 	ResChunk_header header;
 	uint8_t id;				// <comment = "The type identifier this chunk is holding">;
 	uint8_t res0;				// <comment = "Must be 0">;
-	uint16_t res1;			// <comment = "Must be 0">;
+	uint16_t res1;			// 是子项的数量，比如有多少种本地化
 	uint32_t entryCount;		// <comment = "Number of uint32_t entry configuration masks that follow">;
 };
 
@@ -554,4 +554,6 @@ extern const char* UI_MODE_TYPE_VALUES[16];
 extern void initTableConfig(void);
 extern QString tableConfig2String(const QString& _prefix, const ResTable_config& _tableConfig);
 extern uint32_t getTableConfigMask(const ResTable_config& _tableConfig);
+extern void packLanguageOrRegion(const char* _in, int _inlen, char* _out, int _base);
+
 #endif // ResArscStruct_h__

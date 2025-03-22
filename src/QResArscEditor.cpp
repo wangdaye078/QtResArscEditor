@@ -11,9 +11,10 @@
 #include "basicDefine.h"
 #include "QAppendDialog.h"
 #include "QEditDialog.h"
+#include "QAddLocaleDialog.h"
 
 QResArscEditor::QResArscEditor(QWidget* _parent)
-	: QResArscEditorUI(_parent), m_valueMenu(NULL)
+	: QResArscEditorUI(_parent), m_valueMenu(NULL), m_treeMenu(NULL)
 {
 	m_Parser = new QResArscParser(this);
 }
@@ -23,6 +24,7 @@ QResArscEditor::~QResArscEditor()
 }
 void QResArscEditor::refreshArscTree()
 {
+	m_TW_tree->clear();
 	const ResTable_package& t_tablePackage = m_Parser->tablePackage();
 	QTreeWidgetItem* t_packageItem = new QTreeWidgetItem(m_TW_tree);
 	t_packageItem->setText(0, WCHARToQString(t_tablePackage.name));
@@ -39,16 +41,11 @@ void QResArscEditor::refreshArscTree()
 		QTreeWidgetItem* t_typeItem = new QTreeWidgetItem(t_packageItem);
 		t_typeItem->setText(0, t_typeString.strings[i.key() - 1]);
 		t_typeItem->setData(0, eTreeItemRole_type, eTreeItemType_type);
-
+		t_typeItem->setData(0, eTreeItemRole_typeid, i.key());
 		const QVector<TTableTypeEx>& t_tableType = t_typeDatas[i.key()].typeDatas;
 		for (int j = 0; j < t_tableType.size(); ++j)
 		{
 			QTreeWidgetItem* t_specItem = new QTreeWidgetItem(t_typeItem);
-			QString t_cs = tableConfig2String(t_typeString.strings[i.key() - 1], t_tableType[j].config);
-			if (t_cs == "string-sr")
-			{
-				int a = 0;
-			}
 			t_specItem->setText(0, tableConfig2String(t_typeString.strings[i.key() - 1], t_tableType[j].config));
 			t_specItem->setData(0, eTreeItemRole_type, eTreeItemType_spec);
 			t_specItem->setData(0, eTreeItemRole_typeid, i.key());
@@ -142,6 +139,8 @@ void QResArscEditor::onSaveReleased_Slot(void)
 }
 void QResArscEditor::onTreeCurrentItemChanged_slot(QTreeWidgetItem* _current, QTreeWidgetItem* _previous)
 {
+	if (_current == NULL)
+		return;
 	if (_current->data(0, eTreeItemRole_type).toUInt() != eTreeItemType_spec)
 		return;
 
@@ -169,6 +168,39 @@ void QResArscEditor::onShowValueContextMenu_slot(const QPoint& _pos)
 		m_valueMenu->addAction(m_AC_EditValue);
 	m_valueMenu->popup(QCursor::pos());
 }
+void QResArscEditor::onShowTreeContextMenu_slot(const QPoint& _pos)
+{
+	if (m_TW_tree->currentItem() == NULL)
+		return;
+	QTreeWidgetItem* t_item = m_TW_tree->currentItem();
+	QTreeWidgetItem* t_typeItem = t_item;
+	if (t_item->data(0, eTreeItemRole_type).toUInt() != eTreeItemType_type)
+		t_typeItem = t_item->parent();
+
+	delete m_treeMenu;
+	m_treeMenu = new QMenu(m_TW_tree);
+	m_treeMenu->setObjectName(QString::fromUtf8("m_treeMenu"));
+
+	quint32 t_typeid = t_typeItem->data(0, eTreeItemRole_typeid).toUInt();
+	const QMap<uint, TTableTypeData>& t_typeDatas = m_Parser->tableTypeDatas();
+	Q_ASSERT(t_typeDatas.contains(t_typeid));
+	const TTableTypeData& t_tableTypeData = t_typeDatas[t_typeid];
+	for (int i = 0; i < t_tableTypeData.typeSpec.configmask.size(); ++i)
+	{
+		if (t_tableTypeData.typeSpec.configmask[i] == ACONFIGURATION_LOCALE)
+		{
+			m_treeMenu->addAction(m_AC_AddLocale);
+			break;
+		}
+	}
+
+	if (t_item->data(0, eTreeItemRole_type).toUInt() == eTreeItemType_spec)
+	{
+		//m_treeMenu->addAction(m_AC_ExportLocale);
+		//m_treeMenu->addAction(m_AC_ImportLocale);
+	}
+	m_treeMenu->popup(QCursor::pos());
+}
 void QResArscEditor::onAddValueTriggered_slot(void)
 {
 	if (m_TW_tree->currentItem() == NULL)
@@ -186,7 +218,7 @@ void QResArscEditor::onAddValueTriggered_slot(void)
 	const TTableTypeEx& t_defaultType = t_tableType[0];
 	const TTableTypeEx& t_type = t_tableType[t_specid];
 
-	QVector<uint32_t> t_configMasks = t_typeDatas[t_typeid].typeSpec.configmask;
+	const QVector<uint32_t>& t_configMasks = t_typeDatas[t_typeid].typeSpec.configmask;
 	uint32_t t_configMask = getTableConfigMask(t_type.config);
 
 	QMap<uint32_t, ResStringPool_ref> m_addType;
@@ -229,7 +261,8 @@ void QResArscEditor::onDeleteValueTriggered_slot(void)
 	quint32 t_typeid = m_TW_tree->currentItem()->data(0, eTreeItemRole_typeid).toUInt();
 	quint32 t_specid = m_TW_tree->currentItem()->data(0, eTreeItemRole_specid).toUInt();
 	QTreeWidgetItem* t_item = m_TW_value->currentItem();
-	if (t_specid == 0 || t_item == NULL || t_item->data(0, eValueItemRole_type).toUInt() != eValueItemType_arrayitem)
+	//数组的子项不能随便删除
+	if (t_specid == 0 || t_item == NULL || t_item->data(0, eValueItemRole_type).toUInt() == eValueItemType_arrayitem)
 		return;
 	if (QMessageBox::question(this, tr("warning"), tr("Are you sure you want to delete this item?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
 		return;
@@ -255,29 +288,54 @@ void QResArscEditor::onEditValueTriggered_slot(void)
 	uint32_t t_dataType = t_item->data(0, eValueItemRole_datatype).toUInt();
 	uint32_t t_data = t_item->data(0, eValueItemRole_data).toUInt();
 	m_editDialog->setData(t_treeItem->data(0, eTreeItemRole_tableConfig).value<ResTable_config>(), t_dataType, t_data);
-	if (m_editDialog->exec() == QDialog::Accepted)
+	if (m_editDialog->exec() != QDialog::Accepted)
+		return;
+	Res_value::_DataType t_newType = (Res_value::_DataType)m_editDialog->getType();
+	if (t_newType == Res_value::_DataType::TYPE_STRING)
 	{
-		Res_value::_DataType t_newType = (Res_value::_DataType)m_editDialog->getType();
-		if (t_newType == Res_value::_DataType::TYPE_STRING)
-		{
-			QString t_value = m_editDialog->getSData();
-			bool t_force = false;
-			if (t_dataType == (uint32_t)Res_value::_DataType::TYPE_STRING && m_Parser->getReferenceCount(t_data) > 1)
-				if (QMessageBox::question(this, tr("warning"), tr("The old string number of citations > 1, chang all string?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
-					t_force = true;
-			if (t_item->data(0, eValueItemRole_type).toUInt() == eValueItemType_arrayitem)
-				m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_parentid).toUInt(), t_item->data(0, eValueItemRole_id).toUInt(), t_value, t_force);
-			else
-				m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_id).toUInt(), t_value, t_force);
-		}
+		QString t_value = m_editDialog->getSData();
+		bool t_force = false;
+		if (t_dataType == (uint32_t)Res_value::_DataType::TYPE_STRING && m_Parser->getReferenceCount(t_data) > 1)
+			if (QMessageBox::question(this, tr("warning"), tr("The old string number of citations > 1, chang all string?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+				t_force = true;
+		if (t_item->data(0, eValueItemRole_type).toUInt() == eValueItemType_arrayitem)
+			m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_parentid).toUInt(), t_item->data(0, eValueItemRole_id).toUInt(), t_value, t_force);
 		else
-		{
-			uint32_t t_value = m_editDialog->getData();
-			if (t_item->data(0, eValueItemRole_type).toUInt() == eValueItemType_arrayitem)
-				m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_parentid).toUInt(), t_item->data(0, eValueItemRole_id).toUInt(), t_newType, t_value);
-			else
-				m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_id).toUInt(), t_newType, t_value);
-		}
+			m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_id).toUInt(), t_value, t_force);
+	}
+	else
+	{
+		uint32_t t_value = m_editDialog->getData();
+		if (t_item->data(0, eValueItemRole_type).toUInt() == eValueItemType_arrayitem)
+			m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_parentid).toUInt(), t_item->data(0, eValueItemRole_id).toUInt(), t_newType, t_value);
+		else
+			m_Parser->setValue(t_typeid, t_specid, t_item->data(0, eValueItemRole_id).toUInt(), t_newType, t_value);
 	}
 	refreshResTableType(t_typeid, t_specid);
+}
+void QResArscEditor::onAddLocaleTriggered_slot(void)
+{
+	if (m_addLocaleDialog->exec() != QDialog::Accepted)
+		return;
+
+	QTreeWidgetItem* t_item = m_TW_tree->currentItem();
+	QTreeWidgetItem* t_typeItem = t_item;
+	if (t_item->data(0, eTreeItemRole_type).toUInt() != eTreeItemType_type)
+		t_typeItem = t_item->parent();
+	quint32 t_typeid = t_typeItem->data(0, eTreeItemRole_typeid).toUInt();
+
+	ResTable_config t_config;
+	memset(&t_config, 0, sizeof(t_config));
+	t_config.size = sizeof(t_config);
+	m_addLocaleDialog->getLocale(t_config);
+	m_Parser->addLocale(t_typeid, t_config);
+	refreshArscTree();
+}
+void QResArscEditor::onExportLocaleTriggered_slot(void)
+{
+
+}
+void QResArscEditor::onImportLocaleTriggered_slot(void)
+{
+
 }

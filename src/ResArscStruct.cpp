@@ -43,6 +43,23 @@ void initTableConfig(void)
 	DENSITY_DPI_VALUES.insert(DENSITY_DPI_ANY, "anydpi");
 	DENSITY_DPI_VALUES.insert(DENSITY_DPI_NONE, "nnndpi");
 }
+void packLanguageOrRegion(const char* _in, int _inlen, char* _out, int _base)
+{
+	Q_ASSERT(_inlen == 2 || _inlen == 3);
+	if (_inlen == 2)
+	{
+		_out[0] = _in[0];
+		_out[1] = _in[1];
+	}
+	else
+	{
+		_out[1] = (char)(_in[0] - _base);
+		_out[1] |= ((char)(_in[1] - _base) << 5);
+		_out[0] = ((char)(_in[1] - _base) >> 3);
+		_out[0] |= ((char)(_in[2] - _base) << 2);
+		_out[0] |= 0x80;
+	}
+}
 QString unpackLanguageOrRegion(const char* _value, int _base)
 {
 	if ((_value[0] & 0x80) != 0)
@@ -54,7 +71,6 @@ QString unpackLanguageOrRegion(const char* _value, int _base)
 		return CHARToQStringN(t_result, 3);
 	}
 	return CHARToQStringN(_value, 2);
-
 }
 QString getLocaleString(const ResTable_config& _tableConfig)
 {

@@ -16,6 +16,7 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QEditDialog;
 class QAppendDialog;
+class QAddLocaleDialog;
 class QAction;
 
 class ItemColorDelegate : public QItemDelegate
@@ -55,9 +56,13 @@ private slots:
 	virtual void onSaveReleased_Slot(void) = 0;
 	virtual void onTreeCurrentItemChanged_slot(QTreeWidgetItem* _current, QTreeWidgetItem* _previous) = 0;
 	virtual void onShowValueContextMenu_slot(const QPoint& _pos) = 0;
+	virtual void onShowTreeContextMenu_slot(const QPoint& _pos) = 0;
 	virtual void onAddValueTriggered_slot(void) = 0;
 	virtual void onDeleteValueTriggered_slot(void) = 0;
 	virtual void onEditValueTriggered_slot(void) = 0;
+	virtual void onAddLocaleTriggered_slot(void) = 0;
+	virtual void onExportLocaleTriggered_slot(void) = 0;
+	virtual void onImportLocaleTriggered_slot(void) = 0;
 protected:
 	QLabel* m_LB_filePath;
 	QLineEdit* m_LE_filePath;
@@ -67,10 +72,15 @@ protected:
 	QTreeWidget* m_TW_value;
 	QEditDialog* m_editDialog;
 	QAppendDialog* m_appendDialog;
+	QAddLocaleDialog* m_addLocaleDialog;
 
 	QAction* m_AC_AddValue;
 	QAction* m_AC_DeleteValue;
 	QAction* m_AC_EditValue;
+
+	QAction* m_AC_AddLocale;
+	QAction* m_AC_ExportLocale;
+	QAction* m_AC_ImportLocale;
 };
 
 #endif // QResArscEditorUI_h__

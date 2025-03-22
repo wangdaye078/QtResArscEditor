@@ -10,6 +10,7 @@
 #include <QAction>
 #include "QEditDialog.h"
 #include "QAppendDialog.h"
+#include "QAddLocaleDialog.h"
 
 QResArscEditorUI::QResArscEditorUI(QWidget* _parent)
 	: QDialog(_parent)
@@ -17,6 +18,7 @@ QResArscEditorUI::QResArscEditorUI(QWidget* _parent)
 	CreateControl();
 	m_editDialog = new QEditDialog(this);
 	m_appendDialog = new QAppendDialog(this);
+	m_addLocaleDialog = new QAddLocaleDialog(this);
 	RetranslateUi();
 }
 
@@ -37,8 +39,13 @@ void QResArscEditorUI::RetranslateUi(void)
 	m_AC_AddValue->setText(tr("AddValue"));
 	m_AC_DeleteValue->setText(tr("DeleteValue"));
 	m_AC_EditValue->setText(tr("EditValue"));
+	m_AC_AddLocale->setText(tr("AddLocale"));
+	m_AC_ExportLocale->setText(tr("ExportLocale"));
+	m_AC_ImportLocale->setText(tr("ImportLocale"));
 
 	m_editDialog->RetranslateUi();
+	m_appendDialog->RetranslateUi();
+	m_addLocaleDialog->RetranslateUi();
 }
 void QResArscEditorUI::CreateControl(void)
 {
@@ -80,6 +87,7 @@ void QResArscEditorUI::CreateControl(void)
 	m_TW_tree = new QTreeWidget(t_splitter);
 	m_TW_tree->setIndentation(10);
 	m_TW_tree->setObjectName(QString::fromUtf8("m_TW_tree"));
+	m_TW_tree->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_TW_tree->header()->setVisible(false);
 
 	t_splitter->addWidget(m_TW_tree);
@@ -108,12 +116,24 @@ void QResArscEditorUI::CreateControl(void)
 	m_AC_DeleteValue->setObjectName(QString::fromUtf8("m_AC_DeleteValue"));
 	m_AC_EditValue = new QAction(this);
 	m_AC_EditValue->setObjectName(QString::fromUtf8("m_AC_EditValue"));
+	m_AC_AddLocale = new QAction(this);
+	m_AC_AddLocale->setObjectName(QString::fromUtf8("m_AC_AddLocale"));
+	m_AC_ExportLocale = new QAction(this);
+	m_AC_ExportLocale->setObjectName(QString::fromUtf8("m_AC_ExportLocale"));
+	m_AC_ImportLocale = new QAction(this);
+	m_AC_ImportLocale->setObjectName(QString::fromUtf8("m_AC_ImportLocale"));
 	//------------------------------------------------
 	connect(m_TB_open, SIGNAL(released()), this, SLOT(onOpenReleased_Slot()));
 	connect(m_TB_save, SIGNAL(released()), this, SLOT(onSaveReleased_Slot()));
 	connect(m_TW_tree, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(onTreeCurrentItemChanged_slot(QTreeWidgetItem*, QTreeWidgetItem*)));
 	connect(m_TW_value, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onShowValueContextMenu_slot(const QPoint&)));
+	connect(m_TW_tree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onShowTreeContextMenu_slot(const QPoint&)));
 	connect(m_AC_AddValue, SIGNAL(triggered()), this, SLOT(onAddValueTriggered_slot()));
 	connect(m_AC_DeleteValue, SIGNAL(triggered()), this, SLOT(onDeleteValueTriggered_slot()));
 	connect(m_AC_EditValue, SIGNAL(triggered()), this, SLOT(onEditValueTriggered_slot()));
+	connect(m_AC_AddLocale, SIGNAL(triggered()), this, SLOT(onAddLocaleTriggered_slot()));
+	connect(m_AC_ExportLocale, SIGNAL(triggered()), this, SLOT(onExportLocaleTriggered_slot()));
+	connect(m_AC_ImportLocale, SIGNAL(triggered()), this, SLOT(onImportLocaleTriggered_slot()));
+
+
 }

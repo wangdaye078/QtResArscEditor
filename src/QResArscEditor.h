@@ -53,12 +53,17 @@ private:
 	void onSaveReleased_Slot(void);
 	void onTreeCurrentItemChanged_slot(QTreeWidgetItem* _current, QTreeWidgetItem* _previous);
 	void onShowValueContextMenu_slot(const QPoint& _pos);
+	void onShowTreeContextMenu_slot(const QPoint& _pos);
 	void onAddValueTriggered_slot(void);
 	void onDeleteValueTriggered_slot(void);
 	void onEditValueTriggered_slot(void);
+	void onAddLocaleTriggered_slot(void);
+	void onExportLocaleTriggered_slot(void);
+	void onImportLocaleTriggered_slot(void);
 private:
 	QResArscParser* m_Parser;
 	QMenu* m_valueMenu;
+	QMenu* m_treeMenu;
 };
 
 #endif // QResArscEditor_h__

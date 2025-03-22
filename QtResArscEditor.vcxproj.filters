@@ -58,6 +58,9 @@
     <ClCompile Include="src\QPublicFinal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\QAddLocaleDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\QResArscParser.h">
@@ -76,6 +79,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\QPublicFinal.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\QAddLocaleDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

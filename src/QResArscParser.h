@@ -46,7 +46,7 @@ public:
 	//获得引用的目标
 	QString getReferenceDestination(const ResTable_config& _config, qint32 _data);
 	//将_typeid下面默认组的_id数据，拷贝一份到_specid组（先复制一份默认数据，然后再修改）
-	QSharedPointer<ResTable_entry>& getValue(uint32_t _typeid, uint32_t _specid, uint32_t _id);
+	void addLocale(uint32_t _typeid, const ResTable_config& _config);
 	void copyValue(uint32_t _typeid, uint32_t _specid, uint32_t _id);
 	void deleteValue(uint32_t _typeid, uint32_t _specid, uint32_t _id);
 	//设置值包括是普通数据还是数组，是字符串还是其他
@@ -57,6 +57,8 @@ public:
 	//获得这个字符串的引用数
 	quint32 getReferenceCount(quint32 _index);
 private:
+	TTableTypeEx& getTableType(uint32_t _typeid, uint32_t _specid);
+	QSharedPointer<ResTable_entry>& getValues(uint32_t _typeid, uint32_t _specid, uint32_t _id);
 	//返回这个字符串的新index
 	quint32 replaceString(quint32 _oldIdx, const QString& _str, bool _force = false);  //_force，当引用数大于1时也修改该字符串，而不是重新生成一个，会导致所有使用该字符串的都改变
 	quint32 insertString(const QString& _str);

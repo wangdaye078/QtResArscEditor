@@ -550,6 +550,7 @@ void QResArscParser::writeTablePackage(QByteArray& _buff)
 	for (QMap<uint, TTableTypeData>::iterator i = m_tableTypeDatas.begin(); i != m_tableTypeDatas.end(); ++i)
 	{
 		TTableTypeData& t_tableTypeData = i.value();
+		t_tableTypeData.typeSpec.res1 = t_tableTypeData.typeDatas.size();
 		writeTableTypeSpec(_buff, t_tableTypeData.typeSpec);
 		for (int j = 0; j < t_tableTypeData.typeDatas.size(); ++j)
 		{
@@ -640,6 +641,36 @@ void QResArscParser::initStringReferenceCount(void)
 		Q_ASSERT(m_StringPool.referenceCount[i] != 0);
 	}
 }
+void QResArscParser::addLocale(uint32_t _typeid, const ResTable_config& _config)
+{
+	Q_ASSERT(m_tableTypeDatas.contains(_typeid));
+	TTableTypeData& t_tableTypeData = m_tableTypeDatas[_typeid];
+	TTableTypeEx t_newTableType;
+	//复制头部，子项先全部填空，修改config字段
+	*reinterpret_cast<ResTable_type*>(&t_newTableType) = *reinterpret_cast<ResTable_type*>(&t_tableTypeData.typeDatas[0]);
+	t_newTableType.entryValue.resize(t_tableTypeData.typeSpec.entryCount);
+	t_newTableType.config = _config;
+	//添加到数组里去
+	t_tableTypeData.typeSpec.res1++;
+	t_tableTypeData.typeDatas.append(t_newTableType);
+
+	uint32_t t_specid = t_tableTypeData.typeDatas.size() - 1;
+	uint32_t t_configMask = getTableConfigMask(_config);
+	QVector<uint32_t>& t_configMasks = t_tableTypeData.typeSpec.configmask;
+	const TTableTypeEx& t_defaultType = t_tableTypeData.typeDatas[0];
+
+	for (int i = 0; i < t_defaultType.entryValue.size(); ++i)
+	{
+		//这个字段在当前配置（比如语言本地化，比如分辨率），是不需要处理的
+		if ((t_configMasks[i] & t_configMask) != t_configMask)
+			continue;
+
+		QSharedPointer<ResTable_entry> t_ptrDefaultEntry = t_defaultType.entryValue[i];
+		if (t_ptrDefaultEntry.isNull())
+			continue;
+		copyValue(_typeid, t_specid, i);
+	}
+}
 void QResArscParser::copyValue(uint32_t _typeid, uint32_t _specid, uint32_t _id)
 {
 	Q_ASSERT(m_tableTypeDatas.contains(_typeid));
@@ -650,7 +681,8 @@ void QResArscParser::copyValue(uint32_t _typeid, uint32_t _specid, uint32_t _id)
 
 	const QSharedPointer<ResTable_entry>& t_ptrDefaultEntry = t_defaultType.entryValue[_id];
 	QSharedPointer<ResTable_entry> t_ptrEntry = t_type.entryValue[_id];
-	Q_ASSERT(!t_ptrDefaultEntry.isNull());
+	if (t_ptrDefaultEntry.isNull())
+		return;
 	Q_ASSERT(t_ptrEntry.isNull());
 
 	if ((*t_ptrDefaultEntry).size == sizeof(ResTable_entry))
@@ -677,17 +709,22 @@ void QResArscParser::copyValue(uint32_t _typeid, uint32_t _specid, uint32_t _id)
 		}
 	}
 }
-QSharedPointer<ResTable_entry>& QResArscParser::getValue(uint32_t _typeid, uint32_t _specid, uint32_t _id)
+TTableTypeEx& QResArscParser::getTableType(uint32_t _typeid, uint32_t _specid)
 {
 	Q_ASSERT(m_tableTypeDatas.contains(_typeid));
 	QVector<TTableTypeEx>& t_tableType = m_tableTypeDatas[_typeid].typeDatas;
 	Q_ASSERT(_specid < (quint32)t_tableType.size());
-	TTableTypeEx& t_type = t_tableType[_specid];
+	return t_tableType[_specid];
+}
+QSharedPointer<ResTable_entry>& QResArscParser::getValues(uint32_t _typeid, uint32_t _specid, uint32_t _id)
+{
+	TTableTypeEx& t_type = getTableType(_typeid, _specid);
+	Q_ASSERT(_id < (quint32)t_type.entryValue.size());
 	return t_type.entryValue[_id];
 }
 void QResArscParser::deleteValue(uint32_t _typeid, uint32_t _specid, uint32_t _id)
 {
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValue(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	if ((*t_ptrEntry).size == sizeof(ResTable_entry))
 	{
@@ -708,7 +745,7 @@ void QResArscParser::deleteValue(uint32_t _typeid, uint32_t _specid, uint32_t _i
 }
 void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, Res_value::_DataType _dataYype, uint32_t _data)
 {
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValue(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size == sizeof(ResTable_entry));
 	TTableValueEntry* t_EntryValue = reinterpret_cast<TTableValueEntry*>(t_ptrEntry.get());
@@ -720,7 +757,7 @@ void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, 
 }
 void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, uint32_t _idx, Res_value::_DataType _dataYype, uint32_t _data)
 {
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValue(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size != sizeof(ResTable_entry));
 	TTableMapEntryEx* t_pMapValue = reinterpret_cast<TTableMapEntryEx*>(t_ptrEntry.get());
@@ -736,7 +773,7 @@ void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, 
 	QString t_str = _data;
 	t_str.replace(QString("\\n"), QChar(0x0A));
 
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValue(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size == sizeof(ResTable_entry));
 	TTableValueEntry* t_EntryValue = reinterpret_cast<TTableValueEntry*>(t_ptrEntry.get());
@@ -750,7 +787,7 @@ void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, 
 	QString t_str = _data;
 	t_str.replace(QString("\\n"), QChar(0x0A));
 
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValue(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size != sizeof(ResTable_entry));
 	TTableMapEntryEx* t_pMapValue = reinterpret_cast<TTableMapEntryEx*>(t_ptrEntry.get());

@@ -102,6 +102,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\QAddLocaleDialog.cpp" />
     <ClCompile Include="src\QAppendDialog.cpp" />
     <ClCompile Include="src\QEditDialog.cpp" />
     <ClCompile Include="src\QPublicFinal.cpp" />
@@ -121,6 +122,7 @@
     <QtMoc Include="src\QEditDialog.h" />
     <QtMoc Include="src\QAppendDialog.h" />
     <QtMoc Include="src\QPublicFinal.h" />
+    <QtMoc Include="src\QAddLocaleDialog.h" />
     <ClInclude Include="src\SimpleRichText.h" />
     <ClInclude Include="src\utf8.h" />
     <QtMoc Include="src\QResArscEditorUI.h" />
