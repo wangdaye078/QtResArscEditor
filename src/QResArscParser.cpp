@@ -165,8 +165,10 @@ QString QResArscParser::resValue2String(const Res_value& _value)
 }
 QString QResArscParser::getReferenceDestination(const ResTable_config& _config, qint32 _data)
 {
-	if ((_data >> 24) == 1)
+	if ((_data >> 24) == 1 && (_data & 0xFF0000) != 0)
 		return m_publicFinal->getDataName(_data);
+	else if ((_data >> 24) == 1 && (_data & 0xFF0000) == 0)
+		return QString("0x%1").arg(_data, 8, 16, QChar('0'));
 	else
 	{
 		uint32_t t_typeID = (_data & 0xFF0000) >> 16;
@@ -205,7 +207,10 @@ QString QResArscParser::getReferenceDestination(const ResTable_config& _config, 
 				return resValue2String(t_pValueEntry->value);
 		}
 		else
-			return "it is a array";
+		{
+			TTableMapEntryEx* t_pMapValue = reinterpret_cast<TTableMapEntryEx*>(t_tableEntry.get());
+			return keyString(t_pMapValue->key.index);
+		}
 	}
 }
 quint32 writeStringLen_16(char* _pBuff, const QString& _str)

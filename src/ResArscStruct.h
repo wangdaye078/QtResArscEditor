@@ -351,6 +351,11 @@ struct ResTable_config
 			return false;
 		return true;
 	}
+	ResTable_config()
+	{
+		memset(this, 0, sizeof(ResTable_config));
+		size = sizeof(ResTable_config);
+	}
 };
 
 struct ResTable_type

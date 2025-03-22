@@ -106,7 +106,7 @@ void QResArscEditor::refreshResTableType(quint32 _typeid, quint32 _specid)
 				t_valueItem->setData(0, eValueItemRole_id, j);
 				t_valueItem->setData(0, eValueItemRole_parentid, i);
 				t_valueItem->setText(0, QString("0x%1").arg(t_tableMap.name.indent, 8, 16, QChar('0')));
-				t_valueItem->setText(1, QString("0x%1").arg(t_tableMap.name.indent, 8, 16, QChar('0')));
+				t_valueItem->setText(1, m_Parser->getReferenceDestination(ResTable_config(), t_tableMap.name.indent));
 				t_valueItem->setText(2, m_Parser->resValue2String(t_tableMap.value));
 				t_valueItem->setToolTip(1, QString("0x%1").arg(t_tableMap.name.indent, 8, 16, QChar('0')));
 				QString t_toolTip = QString("0x%1").arg(t_tableMap.value.data, 8, 16, QChar('0'));
