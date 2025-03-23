@@ -2,7 +2,7 @@
 android arsc file editor by Qt  
 安卓的arsc资源文件编辑器，网上的JAVA写的好像不那么好用，所以自己写一个  
 当然写的过程中也参考很多他们的代码  
-使用方法：
+使用方法：  
 1.在你的winrar的“设置->集成”页，把apk加到自定义扩展名里面，这会方便以后的文件处理，不要用winzip或者7zip修改apk文件，不要问我原因，反正我用它们修改文件后，安装可以，但无法执行  
 2.打开apk文件，把里面的resources.arsc解压出来  
 3.用QtResArscEditor打开resources.arsc  

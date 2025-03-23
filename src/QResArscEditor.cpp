@@ -423,6 +423,7 @@ void QResArscEditor::onExportLocaleTriggered_slot(void)
 			{
 				ResTable_map& t_tableMap = t_pMapValue->tablemap[j];
 				t_xmlWriter.writeStartElement("value");
+				t_xmlWriter.writeAttribute("id", QString::number(j));
 				t_xmlWriter.writeAttribute("name", m_Parser->getReferenceDestination(ResTable_config(), t_tableMap.name.indent));
 				t_xmlWriter.writeAttribute("type", QString::number((uint32_t)t_tableMap.value.dataType));
 				QString t_text = m_Parser->resValue2String(t_tableMap.value);
@@ -437,6 +438,13 @@ void QResArscEditor::onExportLocaleTriggered_slot(void)
 	}
 	t_xmlWriter.writeEndElement();
 	t_WriteFile.close();
+}
+uint32_t QStringToUint(const QString& _str)
+{
+	if (_str.toLower().mid(0, 2) == "0x")
+		return _str.mid(2).toUInt(NULL, 16);
+	else
+		return _str.toUInt();
 }
 void QResArscEditor::onImportLocaleTriggered_slot(void)
 {
@@ -466,7 +474,7 @@ void QResArscEditor::onImportLocaleTriggered_slot(void)
 	while (!t_childDom.isNull())
 	{
 		QString t_tagName = t_childDom.tagName();
-		uint t_id = t_childDom.attribute("id").toUInt();
+		uint t_id = QStringToUint(t_childDom.attribute("id"));
 		if (t_tagName == "value")
 		{
 			Res_value::_DataType t_type = (Res_value::_DataType)t_childDom.attribute("type").toUInt();
