@@ -1,6 +1,6 @@
 #include "ResArscStruct.h"
 #include "basicDefine.h"
-const char* DIMENSION_UNIT_STRS[6] = { "px", "dip", "sp", "pt", "in", "mm" };
+const char* DIMENSION_UNIT_STRS[8] = { "px", "dip", "sp", "pt", "in", "mm", "", "" };
 const char* FRACTION_UNIT_STRS[2] = { "%", "%p" };
 float MANTISSA_MULT = 1.0f / (1 << 8);
 float RADIX_MULTS[4] = { 1.0f * MANTISSA_MULT, 1.0f / (1 << 7) * MANTISSA_MULT,
@@ -21,14 +21,14 @@ const char* SCREENLAYOUT_SIZE_VALUES[5] = { "", "small", "normal", "large", "xla
 const char* SCREENLAYOUT_LONG_VALUES[3] = { "", "notlong", "long" };
 const char* SCREENLAYOUT_LAYOUTDIR_VALUES[3] = { "", "ldltr" , "ldrtl" };
 
-const char* SCREENLAYOUT_ROUND_VALUES[3] = { "", "notround" , "round" };
+const char* SCREENLAYOUT_ROUND_VALUES[4] = { "", "notround" , "round", "" };
 const char* TOUCHSCREEN_VALUES[4] = { "", "notouch" , "stylus", "finger" };
 const char* UI_MODE_NIGHT_VALUES[3] = { "","notnight" ,"night" };
 const char* UI_MODE_TYPE_VALUES[16] = { "", "", "desk" , "car" , "television" , "appliance" , "watch" ,"vrheadset", "", "", "", "godzillaui", "smallui", "mediumui", "largeui", "hugeui" };
 
 // colorMode  0 1|2 3|5 6 7 8
 //COLOR_WIDE_VALUES | COLOR_HDR_VALUES |高4位没用
-const char* COLOR_WIDE_VALUES[3] = { "","nowidecg" ,"widecg" };
+const char* COLOR_WIDE_VALUES[4] = { "","nowidecg" ,"widecg", "" };
 const char* COLOR_HDR_VALUES[3] = { "","lowdr" ,"highdr" };
 void initTableConfig(void)
 {
@@ -60,7 +60,7 @@ void packLanguageOrRegion(const char* _in, int _inlen, char* _out, int _base)
 		_out[0] |= 0x80;
 	}
 }
-QString unpackLanguageOrRegion(const char* _value, int _base)
+static QString unpackLanguageOrRegion(const char* _value, int _base)
 {
 	if ((_value[0] & 0x80) != 0)
 	{
@@ -72,7 +72,7 @@ QString unpackLanguageOrRegion(const char* _value, int _base)
 	}
 	return CHARToQStringN(_value, 2);
 }
-QString getLocaleString(const ResTable_config& _tableConfig)
+static QString getLocaleString(const ResTable_config& _tableConfig)
 {
 	QString t_locale;
 	if (_tableConfig.language[0] != '\0')

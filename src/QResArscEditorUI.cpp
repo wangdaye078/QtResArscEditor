@@ -37,6 +37,7 @@ void QResArscEditorUI::RetranslateUi(void)
 	t_treeWidgetItem->setText(0, tr("ID"));
 
 	m_AC_AddValue->setText(tr("AddValue"));
+	m_AC_AddAllValue->setText(tr("AddAllValue"));
 	m_AC_DeleteValue->setText(tr("DeleteValue"));
 	m_AC_EditValue->setText(tr("EditValue"));
 	m_AC_AddLocale->setText(tr("AddLocale"));
@@ -112,6 +113,8 @@ void QResArscEditorUI::CreateControl(void)
 
 	m_AC_AddValue = new QAction(this);
 	m_AC_AddValue->setObjectName(QString::fromUtf8("m_AC_AddValue"));
+	m_AC_AddAllValue = new QAction(this);
+	m_AC_AddAllValue->setObjectName(QString::fromUtf8("m_AC_AddAllValue"));
 	m_AC_DeleteValue = new QAction(this);
 	m_AC_DeleteValue->setObjectName(QString::fromUtf8("m_AC_DeleteValue"));
 	m_AC_EditValue = new QAction(this);
@@ -129,6 +132,7 @@ void QResArscEditorUI::CreateControl(void)
 	connect(m_TW_value, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onShowValueContextMenu_slot(const QPoint&)));
 	connect(m_TW_tree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onShowTreeContextMenu_slot(const QPoint&)));
 	connect(m_AC_AddValue, SIGNAL(triggered()), this, SLOT(onAddValueTriggered_slot()));
+	connect(m_AC_AddAllValue, SIGNAL(triggered()), this, SLOT(onAddAllValueTriggered_slot()));
 	connect(m_AC_DeleteValue, SIGNAL(triggered()), this, SLOT(onDeleteValueTriggered_slot()));
 	connect(m_AC_EditValue, SIGNAL(triggered()), this, SLOT(onEditValueTriggered_slot()));
 	connect(m_AC_AddLocale, SIGNAL(triggered()), this, SLOT(onAddLocaleTriggered_slot()));

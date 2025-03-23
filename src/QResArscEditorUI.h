@@ -58,6 +58,7 @@ private slots:
 	virtual void onShowValueContextMenu_slot(const QPoint& _pos) = 0;
 	virtual void onShowTreeContextMenu_slot(const QPoint& _pos) = 0;
 	virtual void onAddValueTriggered_slot(void) = 0;
+	virtual void onAddAllValueTriggered_slot(void) = 0;
 	virtual void onDeleteValueTriggered_slot(void) = 0;
 	virtual void onEditValueTriggered_slot(void) = 0;
 	virtual void onAddLocaleTriggered_slot(void) = 0;
@@ -75,6 +76,7 @@ protected:
 	QAddLocaleDialog* m_addLocaleDialog;
 
 	QAction* m_AC_AddValue;
+	QAction* m_AC_AddAllValue;
 	QAction* m_AC_DeleteValue;
 	QAction* m_AC_EditValue;
 

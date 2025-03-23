@@ -55,6 +55,7 @@ private:
 	void onShowValueContextMenu_slot(const QPoint& _pos);
 	void onShowTreeContextMenu_slot(const QPoint& _pos);
 	void onAddValueTriggered_slot(void);
+	void onAddAllValueTriggered_slot(void);
 	void onDeleteValueTriggered_slot(void);
 	void onEditValueTriggered_slot(void);
 	void onAddLocaleTriggered_slot(void);

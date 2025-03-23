@@ -221,20 +221,21 @@ void QEditDialog::CreateControl(void)
 	connect(m_LE_Reference, SIGNAL(textChanged(const QString&)), this, SLOT(onReferenceTextChanged_slot(const QString&)));
 	connect(m_CB_ShowRichText, SIGNAL(stateChanged(int)), this, SLOT(onShowRichTextStateChanged_slot(int)));
 	//--------------------------------------------------------
-	m_CB_Type->addItem("Reference", (uint32_t)Res_value::_DataType::TYPE_REFERENCE);		//0x01
-	m_CB_Type->addItem("Attribute", (uint32_t)Res_value::_DataType::TYPE_ATTRIBUTE);		//0x02
-	m_CB_Type->addItem("String", (uint32_t)Res_value::_DataType::TYPE_STRING);				//0x03
-	m_CB_Type->addItem("Float", (uint32_t)Res_value::_DataType::TYPE_FLOAT);				//0x04
-	m_CB_Type->addItem("Dimension", (uint32_t)Res_value::_DataType::TYPE_DIMENSION);		//0x05
-	m_CB_Type->addItem("Fraction", (uint32_t)Res_value::_DataType::TYPE_FRACTION);			//0x06
-	m_CB_Type->addItem("Dynamic_Reference", (uint32_t)Res_value::_DataType::TYPE_DYNAMIC_REFERENCE);	//0x07
-	m_CB_Type->addItem("Int_Dec", (uint32_t)Res_value::_DataType::TYPE_INT_DEC);			//0x10
-	m_CB_Type->addItem("Int_Hex", (uint32_t)Res_value::_DataType::TYPE_INT_HEX);			//0x11
-	m_CB_Type->addItem("Boolean", (uint32_t)Res_value::_DataType::TYPE_INT_BOOLEAN);		//0x12
-	m_CB_Type->addItem("Color_ARGB8", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB8);//0x1c
-	m_CB_Type->addItem("Color_RGB8", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB8);	//0x1d
-	m_CB_Type->addItem("Color_ARGB4", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB4);//0x1e
-	m_CB_Type->addItem("Color_RGB4", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB4);	//0x1f
+	m_CB_Type->addItem("(1)Reference", (uint32_t)Res_value::_DataType::TYPE_REFERENCE);			//0x01
+	m_CB_Type->addItem("(2)Attribute", (uint32_t)Res_value::_DataType::TYPE_ATTRIBUTE);			//0x02
+	m_CB_Type->addItem("(3)String", (uint32_t)Res_value::_DataType::TYPE_STRING);				//0x03
+	m_CB_Type->addItem("(4)Float", (uint32_t)Res_value::_DataType::TYPE_FLOAT);					//0x04
+	m_CB_Type->addItem("(5)Dimension", (uint32_t)Res_value::_DataType::TYPE_DIMENSION);			//0x05
+	m_CB_Type->addItem("(6)Fraction", (uint32_t)Res_value::_DataType::TYPE_FRACTION);			//0x06
+	m_CB_Type->addItem("(7)Dynamic_Reference", (uint32_t)Res_value::_DataType::TYPE_DYNAMIC_REFERENCE);	//0x07
+	m_CB_Type->addItem("(8)Dynamic_Attribute", (uint32_t)Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE);	//0x08
+	m_CB_Type->addItem("(16)Int_Dec", (uint32_t)Res_value::_DataType::TYPE_INT_DEC);			//0x10
+	m_CB_Type->addItem("(17)Int_Hex", (uint32_t)Res_value::_DataType::TYPE_INT_HEX);			//0x11
+	m_CB_Type->addItem("(18)Boolean", (uint32_t)Res_value::_DataType::TYPE_INT_BOOLEAN);		//0x12
+	m_CB_Type->addItem("(28)Color_ARGB8", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB8);//0x1c
+	m_CB_Type->addItem("(29)Color_RGB8", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB8);	//0x1d
+	m_CB_Type->addItem("(30)Color_ARGB4", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB4);//0x1e
+	m_CB_Type->addItem("(31)Color_RGB4", (uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB4);	//0x1f
 
 	m_CB_Boolen->addItem("false", 0);
 	m_CB_Boolen->addItem("true", 1);
@@ -246,6 +247,7 @@ void QEditDialog::CreateControl(void)
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DIMENSION, 2);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_FRACTION, 2);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DYNAMIC_REFERENCE, 5);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE, 3);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_DEC, 2);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_HEX, 3);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_BOOLEAN, 4);
@@ -308,7 +310,7 @@ void QEditDialog::onStackedCurrentChanged_slot(int _index)
 	}
 }
 QRegExp g_hexRegExp(".?0[xX]([0-9a-fA-F]{8})");
-uint32_t getHexTextData(const QString& _str, bool* _ok)
+static uint32_t getHexTextData(const QString& _str, bool* _ok)
 {
 	int t_index = g_hexRegExp.indexIn(_str);
 	if (t_index < 0)
@@ -352,13 +354,13 @@ void QEditDialog::onShowRichTextStateChanged_slot(int)
 
 	m_SW_String->setCurrentIndex(m_CB_ShowRichText->isChecked() ? 1 : 0);
 }
-uint32_t QEditDialog::getType(void)
+uint32_t QEditDialog::getType(void) const
 {
 	return m_CB_Type->currentData().toUInt();
 }
 
 float G_MULT[] = { 1.0, 128.0, 256, 256 };
-uint32_t complexToUint2(float _value)
+static uint32_t complexToUint2(float _value)
 {
 	float t_value = _value / MANTISSA_MULT;
 	int t_multIdx = 0;
@@ -370,7 +372,7 @@ uint32_t complexToUint2(float _value)
 	return uint32_t(t_value) & 0xFFFFFF00 | (t_multIdx << 4);
 }
 QRegExp g_DFRegExp("^([\\-0-9\\.]+)([%A-Za-z]*)$");
-uint32_t getDimensionFractionData(float _v, float _divisor, const QString& _e, const char* _suffix[], int _suffixCount)
+static uint32_t getDimensionFractionData(float _v, float _divisor, const QString& _e, const char* _suffix[], int _suffixCount)
 {
 	uint32_t t_value = complexToUint2(_v / _divisor);
 	for (int i = 0; i < _suffixCount; ++i)
@@ -383,7 +385,47 @@ uint32_t getDimensionFractionData(float _v, float _divisor, const QString& _e, c
 	}
 	return 0;
 }
-uint32_t QEditDialog::getData(void)
+uint32_t QEditDialog::qstringToData(Res_value::_DataType _dataType, const QString& _str)
+{
+	switch (_dataType)
+	{
+	case Res_value::_DataType::TYPE_STRING:
+		Q_ASSERT(false);
+		return 0;
+	case Res_value::_DataType::TYPE_INT_COLOR_ARGB8:
+	case Res_value::_DataType::TYPE_INT_COLOR_RGB8:
+	case Res_value::_DataType::TYPE_INT_COLOR_ARGB4:
+	case Res_value::_DataType::TYPE_INT_COLOR_RGB4:
+		return getHexTextData(_str, NULL);
+	case Res_value::_DataType::TYPE_INT_DEC:
+		return _str.toUInt(NULL, 10);
+	case Res_value::_DataType::TYPE_FLOAT:
+		{
+			float t_f = _str.toFloat();
+			return *reinterpret_cast<uint32_t*>(&t_f);
+		}
+	case Res_value::_DataType::TYPE_DIMENSION:
+		if (g_DFRegExp.indexIn(_str) == 0)
+			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 1, g_DFRegExp.capturedTexts()[2], DIMENSION_UNIT_STRS, 6);
+		return 0;
+	case Res_value::_DataType::TYPE_FRACTION:
+		if (g_DFRegExp.indexIn(_str) == 0)
+			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 100, g_DFRegExp.capturedTexts()[2], FRACTION_UNIT_STRS, 2);
+		return 0;
+	case Res_value::_DataType::TYPE_ATTRIBUTE:
+	case Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE:
+	case Res_value::_DataType::TYPE_INT_HEX:
+		return getHexTextData(_str, NULL);
+	case Res_value::_DataType::TYPE_INT_BOOLEAN:
+		return _str.toLower() == QString("true") ? 1 : 0;
+	case Res_value::_DataType::TYPE_REFERENCE:
+	case Res_value::_DataType::TYPE_DYNAMIC_REFERENCE:
+		return getHexTextData(_str, NULL);
+	default:
+		return 0;
+	}
+}
+uint32_t QEditDialog::getData(void) const
 {
 	Res_value::_DataType t_dataType = Res_value::_DataType(m_CB_Type->currentData().toUInt());
 
@@ -396,35 +438,26 @@ uint32_t QEditDialog::getData(void)
 	case Res_value::_DataType::TYPE_INT_COLOR_RGB8:
 	case Res_value::_DataType::TYPE_INT_COLOR_ARGB4:
 	case Res_value::_DataType::TYPE_INT_COLOR_RGB4:
-		return getHexTextData(m_LE_Color->text(), NULL);
+		return qstringToData(t_dataType, m_LE_Color->text());
 	case Res_value::_DataType::TYPE_INT_DEC:
-		return m_LE_Digital->text().toUInt(NULL, 10);
 	case Res_value::_DataType::TYPE_FLOAT:
-		{
-			float t_f = m_LE_Digital->text().toFloat();
-			return *reinterpret_cast<uint32_t*>(&t_f);
-		}
 	case Res_value::_DataType::TYPE_DIMENSION:
-		if (g_DFRegExp.indexIn(m_LE_Digital->text()) == 0)
-			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 1, g_DFRegExp.capturedTexts()[2], DIMENSION_UNIT_STRS, 6);
-		return 0;
 	case Res_value::_DataType::TYPE_FRACTION:
-		if (g_DFRegExp.indexIn(m_LE_Digital->text()) == 0)
-			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 100, g_DFRegExp.capturedTexts()[2], FRACTION_UNIT_STRS, 2);
-		return 0;
+		return qstringToData(t_dataType, m_LE_Digital->text());
 	case Res_value::_DataType::TYPE_ATTRIBUTE:
+	case Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE:
 	case Res_value::_DataType::TYPE_INT_HEX:
-		return getHexTextData(m_LE_Hex->text(), NULL);
+		return qstringToData(t_dataType, m_LE_Hex->text());
 	case Res_value::_DataType::TYPE_INT_BOOLEAN:
-		return m_CB_Boolen->currentData().toUInt();
+		return qstringToData(t_dataType, m_CB_Boolen->currentText());
 	case Res_value::_DataType::TYPE_REFERENCE:
 	case Res_value::_DataType::TYPE_DYNAMIC_REFERENCE:
-		return getHexTextData(m_LE_Reference->text(), NULL);
+		return qstringToData(t_dataType, m_LE_Reference->text());
 	default:
 		return 0;
 	}
 }
-QString QEditDialog::getSData(void)
+QString QEditDialog::getSData(void) const
 {
 	return m_TE_String->toPlainText();
 }

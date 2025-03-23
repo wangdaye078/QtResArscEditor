@@ -32,9 +32,10 @@ public:
 	void RetranslateUi(void);
 	void setResArscParser(QResArscParser* _p);
 	void setData(const ResTable_config& _config, uint32_t _type, uint32_t _data);
-	uint32_t getType(void);
-	uint32_t getData(void);
-	QString getSData(void);
+	uint32_t getType(void) const;
+	uint32_t getData(void) const;
+	QString getSData(void) const;
+	static uint32_t qstringToData(Res_value::_DataType _dataType, const QString& _str);
 private:
 	void CreateControl(void);
 private slots:

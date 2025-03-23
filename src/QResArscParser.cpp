@@ -96,13 +96,9 @@ QString QResArscParser::keyString(qint32 _key)
 {
 	return m_keyStringPool.strings[_key];
 }
-float complexToFloat(quint32 _v)
+static float complexToFloat(quint32 _v)
 {
 	return ((int)(_v & (0xffffff << 8))) * RADIX_MULTS[(_v >> 4) & 3];
-}
-uint32_t complexToUint(float _v)
-{
-	return 0;
 }
 QString QResArscParser::getStyleString(qint32 _strIndex)
 {
@@ -124,9 +120,11 @@ QString QResArscParser::resValue2String(const Res_value& _value)
 	case Res_value::_DataType::TYPE_NULL:
 		t_svalue = "NULL";
 		break;
+	case Res_value::_DataType::TYPE_DYNAMIC_REFERENCE:
 	case Res_value::_DataType::TYPE_REFERENCE:			//7f??????格式的在m_tableType里找对应的字符串，01??????是系统资源(在public-final.xml中有定义)
 		t_svalue = QString("@0x%1").arg(_value.data, 8, 16, QChar('0'));
 		break;
+	case Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE:
 	case Res_value::_DataType::TYPE_ATTRIBUTE:			//7f??????格式的在m_tableType里找对应的字符串，01??????是系统资源(在public-final.xml中有定义)
 		t_svalue = QString("?0x%1").arg(_value.data, 0, 16);
 		break;
@@ -137,10 +135,10 @@ QString QResArscParser::resValue2String(const Res_value& _value)
 		t_svalue = QString::number(*reinterpret_cast<const float*>(&_value.data));
 		break;
 	case Res_value::_DataType::TYPE_DIMENSION:
-		t_svalue = QString::number(complexToFloat(_value.data)) + DIMENSION_UNIT_STRS[_value.data & 0xf];
+		t_svalue = QString::number(complexToFloat(_value.data)) + DIMENSION_UNIT_STRS[_value.data & 0x7];
 		break;
 	case Res_value::_DataType::TYPE_FRACTION:
-		t_svalue = QString::number(complexToFloat(_value.data) * 100) + FRACTION_UNIT_STRS[_value.data & 0xf];
+		t_svalue = QString::number(complexToFloat(_value.data) * 100) + FRACTION_UNIT_STRS[_value.data & 0x1];
 		break;
 	case Res_value::_DataType::TYPE_FIRST_INT:
 		t_svalue = QString::number(_value.data);
@@ -213,7 +211,7 @@ QString QResArscParser::getReferenceDestination(const ResTable_config& _config, 
 		}
 	}
 }
-quint32 writeStringLen_16(char* _pBuff, const QString& _str)
+static quint32 writeStringLen_16(char* _pBuff, const QString& _str)
 {
 	quint16* t_pBuff = reinterpret_cast<quint16*>(_pBuff);
 	if (_str.size() < 0x8000)
@@ -228,7 +226,7 @@ quint32 writeStringLen_16(char* _pBuff, const QString& _str)
 		return sizeof(quint16) * 2;
 	}
 }
-quint32 writeStringLen_8(char* _pBuff, const QString& _str, QByteArray& _utf8Array)
+static quint32 writeStringLen_8(char* _pBuff, const QString& _str, QByteArray& _utf8Array)
 {
 	qint8* t_pBuff = reinterpret_cast<qint8*>(_pBuff);
 	quint32 t_pos = 0;
@@ -249,7 +247,7 @@ quint32 writeStringLen_8(char* _pBuff, const QString& _str, QByteArray& _utf8Arr
 	}
 	return t_pos;
 }
-quint32 readStringLen_16(const char*& _pBuff)
+static quint32 readStringLen_16(const char*& _pBuff)
 {
 	//看逻辑，UTF16字符串最长可以有0x7FFF FFFF长
 	quint16 t_u16len = readValue<quint16>(_pBuff);
@@ -258,7 +256,7 @@ quint32 readStringLen_16(const char*& _pBuff)
 	else
 		return ((t_u16len & 0x7FFF) << 16) + readValue<ushort>(_pBuff);
 }
-uint readStringLen_8(const char*& _pBuff)
+static uint readStringLen_8(const char*& _pBuff)
 {
 	//看逻辑，UTF8字符串最长可以有0x7F FF长
 	uchar t_u16len = readValue<uchar>(_pBuff);
@@ -272,7 +270,7 @@ uint readStringLen_8(const char*& _pBuff)
 		return ((t_u8len & 0x7F) << 8) + readValue<uchar>(_pBuff);
 }
 
-void readString(QString& _string, const char* _pBuff, bool _isUTF8)
+static void readString(QString& _string, const char* _pBuff, bool _isUTF8)
 {
 	if (!_isUTF8)
 	{
@@ -288,7 +286,7 @@ void readString(QString& _string, const char* _pBuff, bool _isUTF8)
 		Q_ASSERT(_pBuff[t_len] == 0);
 	}
 }
-void writeString(QByteArray& _buff, const QString& _string, bool _isUTF8)
+static void writeString(QByteArray& _buff, const QString& _string, bool _isUTF8)
 {
 	char t_len[4];
 	if (!_isUTF8)
@@ -564,7 +562,7 @@ void QResArscParser::writeTablePackage(QByteArray& _buff)
 	}
 	reinterpret_cast<ResTable_package*>(_buff.data() + t_tablePackageHeader_pos)->header.size = _buff.size() - t_tablePackageHeader_pos;
 }
-void traverseTableType(const TTableTypeEx& _typeData, TRAVERSE_STRIDX_CALLBACK& _callBack)
+static void traverseTableType(const TTableTypeEx& _typeData, TRAVERSE_STRIDX_CALLBACK& _callBack)
 {
 	for (int i = 0; i < _typeData.entryValue.size(); ++i)
 	{
@@ -606,7 +604,7 @@ void QResArscParser::traversalAllValue(TRAVERSE_STRIDX_CALLBACK _callBack)
 	}
 }
 //用于计算引用计数
-void referenceCountInc(Res_value::_DataType _type, quint32& _index, QVector<int>* _referenceCount)
+static void referenceCountInc(Res_value::_DataType _type, quint32& _index, QVector<int>* _referenceCount)
 {
 	if (_type != Res_value::_DataType::TYPE_STRING)
 		return;
@@ -614,7 +612,7 @@ void referenceCountInc(Res_value::_DataType _type, quint32& _index, QVector<int>
 	(*_referenceCount)[_index]++;
 }
 //_beginIdx后面的所有值都加_addValue
-void incIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _beginIndex, int _addValue)
+static void incIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _beginIndex, int _addValue)
 {
 	if (_type != Res_value::_DataType::TYPE_STRING)
 		return;
@@ -622,7 +620,7 @@ void incIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _beginInde
 		_index += _addValue;
 }
 //将某个值所有的引用都改成另一个值
-void changIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _oldIdx, quint32 _newIdx, int* _count)
+static void changIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _oldIdx, quint32 _newIdx, int* _count)
 {
 	if (_type != Res_value::_DataType::TYPE_STRING)
 		return;
@@ -650,9 +648,18 @@ void QResArscParser::addLocale(uint32_t _typeid, const ResTable_config& _config)
 {
 	Q_ASSERT(m_tableTypeDatas.contains(_typeid));
 	TTableTypeData& t_tableTypeData = m_tableTypeDatas[_typeid];
+	for (int i = 0; i < t_tableTypeData.typeDatas.size(); ++i)
+	{
+		if (t_tableTypeData.typeDatas[i].config == _config)
+			return;
+	}
+
 	TTableTypeEx t_newTableType;
 	//复制头部，子项先全部填空，修改config字段
-	*reinterpret_cast<ResTable_type*>(&t_newTableType) = *reinterpret_cast<ResTable_type*>(&t_tableTypeData.typeDatas[0]);
+#pragma warning(push)
+#pragma warning(disable: 26437)
+	* reinterpret_cast<ResTable_type*>(&t_newTableType) = *reinterpret_cast<ResTable_type*>(&t_tableTypeData.typeDatas[0]);
+#pragma warning(pop)
 	t_newTableType.entryValue.resize(t_tableTypeData.typeSpec.entryCount);
 	t_newTableType.config = _config;
 	//添加到数组里去
@@ -721,15 +728,25 @@ TTableTypeEx& QResArscParser::getTableType(uint32_t _typeid, uint32_t _specid)
 	Q_ASSERT(_specid < (quint32)t_tableType.size());
 	return t_tableType[_specid];
 }
-QSharedPointer<ResTable_entry>& QResArscParser::getValues(uint32_t _typeid, uint32_t _specid, uint32_t _id)
+QSharedPointer<ResTable_entry>& QResArscParser::getValue(uint32_t _typeid, uint32_t _specid, uint32_t _id)
 {
 	TTableTypeEx& t_type = getTableType(_typeid, _specid);
 	Q_ASSERT(_id < (quint32)t_type.entryValue.size());
 	return t_type.entryValue[_id];
 }
+QSharedPointer<ResTable_entry>& QResArscParser::getValueOrInsert(uint32_t _typeid, uint32_t _specid, uint32_t _id)
+{
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValue(_typeid, _specid, _id);
+	if (t_ptrEntry.isNull())
+	{
+		copyValue(_typeid, _specid, _id);
+		t_ptrEntry = getValue(_typeid, _specid, _id);
+	}
+	return t_ptrEntry;
+}
 void QResArscParser::deleteValue(uint32_t _typeid, uint32_t _specid, uint32_t _id)
 {
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValue(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	if ((*t_ptrEntry).size == sizeof(ResTable_entry))
 	{
@@ -750,7 +767,7 @@ void QResArscParser::deleteValue(uint32_t _typeid, uint32_t _specid, uint32_t _i
 }
 void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, Res_value::_DataType _dataYype, uint32_t _data)
 {
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValueOrInsert(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size == sizeof(ResTable_entry));
 	TTableValueEntry* t_EntryValue = reinterpret_cast<TTableValueEntry*>(t_ptrEntry.get());
@@ -762,7 +779,7 @@ void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, 
 }
 void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, uint32_t _idx, Res_value::_DataType _dataYype, uint32_t _data)
 {
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValueOrInsert(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size != sizeof(ResTable_entry));
 	TTableMapEntryEx* t_pMapValue = reinterpret_cast<TTableMapEntryEx*>(t_ptrEntry.get());
@@ -778,7 +795,7 @@ void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, 
 	QString t_str = _data;
 	t_str.replace(QString("\\n"), QChar(0x0A));
 
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValueOrInsert(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size == sizeof(ResTable_entry));
 	TTableValueEntry* t_EntryValue = reinterpret_cast<TTableValueEntry*>(t_ptrEntry.get());
@@ -792,7 +809,7 @@ void QResArscParser::setValue(uint32_t _typeid, uint32_t _specid, uint32_t _id, 
 	QString t_str = _data;
 	t_str.replace(QString("\\n"), QChar(0x0A));
 
-	QSharedPointer<ResTable_entry>& t_ptrEntry = getValues(_typeid, _specid, _id);
+	QSharedPointer<ResTable_entry>& t_ptrEntry = getValueOrInsert(_typeid, _specid, _id);
 	Q_ASSERT(!t_ptrEntry.isNull());
 	Q_ASSERT((*t_ptrEntry).size != sizeof(ResTable_entry));
 	TTableMapEntryEx* t_pMapValue = reinterpret_cast<TTableMapEntryEx*>(t_ptrEntry.get());

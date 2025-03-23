@@ -347,7 +347,13 @@ struct ResTable_config
 			return false;
 		if (screenSizeDp != _other.screenSizeDp)
 			return false;
+		if (*reinterpret_cast<const uint32_t*>(localeScript) != *reinterpret_cast<const uint32_t*>(_other.localeScript))
+			return false;
+		if (*reinterpret_cast<const uint32_t*>(localeVariant) != *reinterpret_cast<const uint32_t*>(_other.localeVariant))
+			return false;
 		if (screenConfig2 != _other.screenConfig2)
+			return false;
+		if (*reinterpret_cast<const uint32_t*>(localeNumberingSystem) != *reinterpret_cast<const uint32_t*>(_other.localeNumberingSystem))
 			return false;
 		return true;
 	}
@@ -409,6 +415,9 @@ struct Res_value
 		// The 'data' holds a dynamic ResTable_ref, which needs to be
 		// resolved before it can be used like a TYPE_REFERENCE.
 		TYPE_DYNAMIC_REFERENCE = 0x07,
+		// The 'data' holds an attribute resource identifier, which needs to be resolved
+		// before it can be used like a TYPE_ATTRIBUTE.
+		TYPE_DYNAMIC_ATTRIBUTE = 0x08,
 		// Beginning of integer flavors...
 		TYPE_FIRST_INT = 0x10,
 		// The 'data' is a raw integer value of the form n..n.
@@ -537,7 +546,7 @@ struct TStringPool
 	void reset(void);
 };
 
-extern const char* DIMENSION_UNIT_STRS[6];
+extern const char* DIMENSION_UNIT_STRS[8];
 extern const char* FRACTION_UNIT_STRS[2];
 extern float MANTISSA_MULT;
 extern float RADIX_MULTS[4];
@@ -550,7 +559,7 @@ extern const char* ORIENTATION_VALUES[4];
 extern const char* SCREENLAYOUT_SIZE_VALUES[5];
 extern const char* SCREENLAYOUT_LONG_VALUES[3];
 extern const char* SCREENLAYOUT_LAYOUTDIR_VALUES[3];
-extern const char* SCREENLAYOUT_ROUND_VALUES[3];
+extern const char* SCREENLAYOUT_ROUND_VALUES[4];
 extern const char* TOUCHSCREEN_VALUES[4];
 extern const char* UI_MODE_NIGHT_VALUES[3];
 extern const char* UI_MODE_TYPE_VALUES[16];
