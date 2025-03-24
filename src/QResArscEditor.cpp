@@ -323,7 +323,7 @@ void QResArscEditor::onEditValueTriggered_slot(void)
 	quint32 t_typeid = t_treeItem->data(0, eTreeItemRole_typeid).toUInt();
 	quint32 t_specid = t_treeItem->data(0, eTreeItemRole_specid).toUInt();
 	QTreeWidgetItem* t_item = m_TW_value->currentItem();
-	if (t_specid == 0 || t_item == NULL || t_item->data(0, eValueItemRole_type).toUInt() == eValueItemType_array)
+	if (t_item == NULL || t_item->data(0, eValueItemRole_type).toUInt() == eValueItemType_array)
 		return;
 	m_editDialog->m_LE_ID->setText(t_item->text(0));
 	m_editDialog->m_LE_Name->setText(t_item->text(1));
