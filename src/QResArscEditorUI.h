@@ -64,6 +64,7 @@ private slots:
 	virtual void onAddLocaleTriggered_slot(void) = 0;
 	virtual void onExportLocaleTriggered_slot(void) = 0;
 	virtual void onImportLocaleTriggered_slot(void) = 0;
+	void onExpandAllTriggered_slot(void);
 protected:
 	QLabel* m_LB_filePath;
 	QLineEdit* m_LE_filePath;
@@ -79,6 +80,7 @@ protected:
 	QAction* m_AC_AddAllValue;
 	QAction* m_AC_DeleteValue;
 	QAction* m_AC_EditValue;
+	QAction* m_AC_ExpandAll;
 
 	QAction* m_AC_AddLocale;
 	QAction* m_AC_ExportLocale;

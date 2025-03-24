@@ -40,6 +40,7 @@ void QResArscEditorUI::RetranslateUi(void)
 	m_AC_AddAllValue->setText(tr("AddAllValue"));
 	m_AC_DeleteValue->setText(tr("DeleteValue"));
 	m_AC_EditValue->setText(tr("EditValue"));
+	m_AC_ExpandAll->setText(tr("ExpandAll"));
 	m_AC_AddLocale->setText(tr("AddLocale"));
 	m_AC_ExportLocale->setText(tr("ExportLocale"));
 	m_AC_ImportLocale->setText(tr("ImportLocale"));
@@ -119,6 +120,8 @@ void QResArscEditorUI::CreateControl(void)
 	m_AC_DeleteValue->setObjectName(QString::fromUtf8("m_AC_DeleteValue"));
 	m_AC_EditValue = new QAction(this);
 	m_AC_EditValue->setObjectName(QString::fromUtf8("m_AC_EditValue"));
+	m_AC_ExpandAll = new QAction(this);
+	m_AC_ExpandAll->setObjectName(QString::fromUtf8("m_AC_ExpandAll"));
 	m_AC_AddLocale = new QAction(this);
 	m_AC_AddLocale->setObjectName(QString::fromUtf8("m_AC_AddLocale"));
 	m_AC_ExportLocale = new QAction(this);
@@ -135,9 +138,12 @@ void QResArscEditorUI::CreateControl(void)
 	connect(m_AC_AddAllValue, SIGNAL(triggered()), this, SLOT(onAddAllValueTriggered_slot()));
 	connect(m_AC_DeleteValue, SIGNAL(triggered()), this, SLOT(onDeleteValueTriggered_slot()));
 	connect(m_AC_EditValue, SIGNAL(triggered()), this, SLOT(onEditValueTriggered_slot()));
+	connect(m_AC_ExpandAll, SIGNAL(triggered()), this, SLOT(onExpandAllTriggered_slot()));
 	connect(m_AC_AddLocale, SIGNAL(triggered()), this, SLOT(onAddLocaleTriggered_slot()));
 	connect(m_AC_ExportLocale, SIGNAL(triggered()), this, SLOT(onExportLocaleTriggered_slot()));
 	connect(m_AC_ImportLocale, SIGNAL(triggered()), this, SLOT(onImportLocaleTriggered_slot()));
-
-
+}
+void QResArscEditorUI::onExpandAllTriggered_slot(void)
+{
+	m_TW_value->expandAll();
 }

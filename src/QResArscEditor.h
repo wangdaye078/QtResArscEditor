@@ -65,6 +65,7 @@ private:
 	QResArscParser* m_Parser;
 	QMenu* m_valueMenu;
 	QMenu* m_treeMenu;
+	QString m_BasePath;
 };
 
 #endif // QResArscEditor_h__

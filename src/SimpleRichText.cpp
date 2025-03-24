@@ -42,11 +42,13 @@ void decodeRichText(QString& _input, TStringPoolSpans& _spanEx, const TStringPoo
 	while ((t_bPos = g_rBeing.indexIn(_input)) != -1 && t_bPos < _endPos)
 	{
 		_spanEx.spans.append(ResStringPool_span());
-		ResStringPool_span& t_span = _spanEx.spans.last();
+		int t_lastIdx = _spanEx.spans.size() - 1;
+		//不能这么写，因为下面如果执行到递归，插入新项后，这个地址可能就变成野指针了。
+		//ResStringPool_span& t_span = _spanEx.spans.last();
 		TRichString t_tag(g_rBeing.capturedTexts()[1], TStringPoolSpans());
 		Q_ASSERT(_stringPool.strIndexs.contains(t_tag));
-		t_span.name.index = _stringPool.strIndexs[t_tag];
-		t_span.firstChar = t_bPos;
+		_spanEx.spans[t_lastIdx].name.index = _stringPool.strIndexs[t_tag];
+		_spanEx.spans[t_lastIdx].firstChar = t_bPos;
 
 		int t_matchedLength = g_rBeing.matchedLength();
 		_input.remove(t_bPos, t_matchedLength);
@@ -62,7 +64,7 @@ void decodeRichText(QString& _input, TStringPoolSpans& _spanEx, const TStringPoo
 		}
 		_input.remove(t_ePos, t_endtag.length());
 		_endPos -= t_matchedLength;
-		t_span.lastChar = t_ePos - 1;
+		_spanEx.spans[t_lastIdx].lastChar = t_ePos - 1;
 	}
 }
 QString utf8_to_QString(const char* _pBuff, quint32 _len)

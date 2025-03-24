@@ -7,6 +7,7 @@
 #include <QTreeWidget>
 #include <QMenu>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox> 
 #include <QDomDocument>
 #include <QDomElement>
@@ -18,7 +19,7 @@
 #include "QAddLocaleDialog.h"
 
 QResArscEditor::QResArscEditor(QWidget* _parent)
-	: QResArscEditorUI(_parent), m_valueMenu(NULL), m_treeMenu(NULL)
+	: QResArscEditorUI(_parent), m_valueMenu(NULL), m_treeMenu(NULL), m_BasePath(".")
 {
 	m_Parser = new QResArscParser(this);
 }
@@ -119,20 +120,22 @@ void QResArscEditor::refreshResTableType(quint32 _typeid, quint32 _specid)
 }
 void QResArscEditor::onOpenReleased_Slot(void)
 {
-	QString t_FileName = QFileDialog::getOpenFileName(this, tr("Open ARSC File"), ".",
+	QString t_FileName = QFileDialog::getOpenFileName(this, tr("Open ARSC File"), m_BasePath,
 		tr("ARSC File (*.arsc)"), NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;
+	m_BasePath = QFileInfo(t_FileName).absolutePath();
 	m_LE_filePath->setText(t_FileName);
 	m_Parser->readFile(t_FileName);
 	refreshArscTree();
 }
 void QResArscEditor::onSaveReleased_Slot(void)
 {
-	QString t_FileName = QFileDialog::getSaveFileName(this, tr("Get OutPut ARSC File"), ".",
+	QString t_FileName = QFileDialog::getSaveFileName(this, tr("Get OutPut ARSC File"), m_BasePath,
 		tr("ARSC File (*.arsc)"), NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;
+	m_BasePath = QFileInfo(t_FileName).absolutePath();
 	m_LE_filePath->setText(t_FileName);
 	if (!m_Parser->writeFile(t_FileName))
 		QMessageBox::warning(this, tr("warning"), tr("The specified file cannot be written in !"));
@@ -156,13 +159,14 @@ void QResArscEditor::onShowValueContextMenu_slot(const QPoint& _pos)
 		return;
 	//默认的那些值不能删
 	quint32 t_specid = m_TW_tree->currentItem()->data(0, eTreeItemRole_specid).toUInt();
-	if (t_specid == 0)
-		return;
 	delete m_valueMenu;
 	m_valueMenu = new QMenu(m_TW_value);
 	m_valueMenu->setObjectName(QString::fromUtf8("m_valueMenu"));
-	m_valueMenu->addAction(m_AC_AddValue);
-	m_valueMenu->addAction(m_AC_AddAllValue);
+	m_valueMenu->addAction(m_AC_ExpandAll);
+	if (t_specid != 0)
+		m_valueMenu->addAction(m_AC_AddValue);
+	if (t_specid != 0)
+		m_valueMenu->addAction(m_AC_AddAllValue);
 	QTreeWidgetItem* t_item = m_TW_value->currentItem();
 	if (t_specid != 0 && t_item != NULL && t_item->data(0, eValueItemRole_type).toUInt() != eValueItemType_arrayitem)
 		m_valueMenu->addAction(m_AC_DeleteValue);
@@ -372,11 +376,11 @@ void QResArscEditor::onAddLocaleTriggered_slot(void)
 }
 void QResArscEditor::onExportLocaleTriggered_slot(void)
 {
-	QString t_FileName = QFileDialog::getSaveFileName(this, tr("Get OutPut xml File"), ".",
+	QString t_FileName = QFileDialog::getSaveFileName(this, tr("Get OutPut xml File"), m_BasePath,
 		tr("xml File (*.xml)"), NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;
-
+	m_BasePath = QFileInfo(t_FileName).absolutePath();
 	if (m_TW_tree->currentItem() == NULL)
 		return;
 	QTreeWidgetItem* t_treeItem = m_TW_tree->currentItem();
@@ -388,7 +392,10 @@ void QResArscEditor::onExportLocaleTriggered_slot(void)
 
 	QFile t_WriteFile(t_FileName);
 	if (!t_WriteFile.open(QFile::WriteOnly | QFile::Text))
+	{
+		QMessageBox::warning(this, tr("warning"), tr("file open failed !"));
 		return;
+	}
 
 	QXmlStreamWriter t_xmlWriter(&t_WriteFile);
 	t_xmlWriter.setAutoFormatting(true);
@@ -402,8 +409,8 @@ void QResArscEditor::onExportLocaleTriggered_slot(void)
 		if ((*t_ptrEntry).size == sizeof(ResTable_entry))
 		{
 			TTableValueEntry* t_pValueEntry = reinterpret_cast<TTableValueEntry*>(t_ptrEntry.get());
-			t_xmlWriter.writeStartElement("value");
-			t_xmlWriter.writeAttribute("id", QString::number(i));
+			t_xmlWriter.writeStartElement("string");
+			t_xmlWriter.writeAttribute("id", QString("0x%1").arg(0x7f000000 + (t_typeid << 16) + i, 8, 16, QChar('0')));
 			t_xmlWriter.writeAttribute("name", m_Parser->keyString(t_pValueEntry->key.index));
 			t_xmlWriter.writeAttribute("type", QString::number((uint32_t)t_pValueEntry->value.dataType));
 			QString t_text = m_Parser->resValue2String(t_pValueEntry->value);
@@ -416,13 +423,13 @@ void QResArscEditor::onExportLocaleTriggered_slot(void)
 		else
 		{
 			TTableMapEntryEx* t_pMapValue = reinterpret_cast<TTableMapEntryEx*>(t_ptrEntry.get());
-			t_xmlWriter.writeStartElement("array");
-			t_xmlWriter.writeAttribute("id", QString::number(i));
+			t_xmlWriter.writeStartElement("string-array");
+			t_xmlWriter.writeAttribute("id", QString("0x%1").arg(0x7f000000 + (t_typeid << 16) + i, 8, 16, QChar('0')));
 			t_xmlWriter.writeAttribute("name", m_Parser->keyString(t_pMapValue->key.index));
 			for (quint32 j = 0; j < t_pMapValue->count; ++j)
 			{
 				ResTable_map& t_tableMap = t_pMapValue->tablemap[j];
-				t_xmlWriter.writeStartElement("value");
+				t_xmlWriter.writeStartElement("item");
 				t_xmlWriter.writeAttribute("id", QString::number(j));
 				t_xmlWriter.writeAttribute("name", m_Parser->getReferenceDestination(ResTable_config(), t_tableMap.name.indent));
 				t_xmlWriter.writeAttribute("type", QString::number((uint32_t)t_tableMap.value.dataType));
@@ -438,6 +445,7 @@ void QResArscEditor::onExportLocaleTriggered_slot(void)
 	}
 	t_xmlWriter.writeEndElement();
 	t_WriteFile.close();
+	QMessageBox::information(this, tr("information"), tr("Export was successful !"));
 }
 uint32_t QStringToUint(const QString& _str)
 {
@@ -448,16 +456,18 @@ uint32_t QStringToUint(const QString& _str)
 }
 void QResArscEditor::onImportLocaleTriggered_slot(void)
 {
-	QString t_FileName = QFileDialog::getOpenFileName(this, tr("Open xml File"), ".",
+	QString t_FileName = QFileDialog::getOpenFileName(this, tr("Open xml File"), m_BasePath,
 		tr("xml File (*.xml)"), NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;
+	m_BasePath = QFileInfo(t_FileName).absolutePath();
 	QFile t_ReadFile(t_FileName);
 	t_ReadFile.open(QFile::ReadOnly);
 	QDomDocument t_domTree;
 	if (!t_domTree.setContent(&t_ReadFile))
 	{
 		t_ReadFile.close();
+		QMessageBox::warning(this, tr("warning"), tr("The XML format of this file is incorrect !"));
 		return;
 	}
 
@@ -466,41 +476,79 @@ void QResArscEditor::onImportLocaleTriggered_slot(void)
 	QTreeWidgetItem* t_treeItem = m_TW_tree->currentItem();
 	if (t_treeItem->data(0, eTreeItemRole_type).toUInt() != eTreeItemType_spec)
 		return;
-	uint t_typeid = t_treeItem->data(0, eTreeItemRole_typeid).toUInt();
-	uint t_specid = t_treeItem->data(0, eTreeItemRole_specid).toUInt();
-
+	struct TValue
+	{
+		Res_value::_DataType type;
+		QString data;
+		TValue(Res_value::_DataType _type = Res_value::_DataType::TYPE_NULL, const QString& _data = QString()) :
+			type(_type), data(_data) {
+		};
+	};
+	QMap<QString, TValue> t_StringMap;
+	QMap<QString, QVector<TValue>> t_arrayMap;
 	QDomElement t_root = t_domTree.documentElement();
 	QDomElement t_childDom = t_root.firstChildElement();
 	while (!t_childDom.isNull())
 	{
 		QString t_tagName = t_childDom.tagName();
-		uint t_id = QStringToUint(t_childDom.attribute("id"));
-		if (t_tagName == "value")
+		QString t_name = t_childDom.attribute("name");
+		if (t_tagName == "string")
 		{
-			Res_value::_DataType t_type = (Res_value::_DataType)t_childDom.attribute("type").toUInt();
-			QString t_text = t_childDom.text();
-			if (t_type == Res_value::_DataType::TYPE_STRING)
-				m_Parser->setValue(t_typeid, t_specid, t_id, t_text, false);
-			else
-				m_Parser->setValue(t_typeid, t_specid, t_id, t_type, QEditDialog::qstringToData(t_type, t_text));
+			t_StringMap.insert(t_name, TValue((Res_value::_DataType)t_childDom.attribute("type").toUInt(), t_childDom.text()));
 		}
-		else if (t_tagName == "array")
+		else if (t_tagName == "string-array")
 		{
-			QDomElement t_valueDom = t_childDom.firstChildElement("value");
+			QDomElement t_valueDom = t_childDom.firstChildElement("item");
 			while (!t_valueDom.isNull())
 			{
-				Res_value::_DataType t_type = (Res_value::_DataType)t_valueDom.attribute("type").toUInt();
-				uint t_idx = t_valueDom.attribute("id").toUInt();
-				QString t_text = t_valueDom.text();
-				if (t_type == Res_value::_DataType::TYPE_STRING)
-					m_Parser->setValue(t_typeid, t_specid, t_id, t_idx, t_text, false);
-				else
-					m_Parser->setValue(t_typeid, t_specid, t_id, t_idx, t_type, QEditDialog::qstringToData(t_type, t_text));
-
-				t_valueDom = t_valueDom.nextSiblingElement("value");
+				t_arrayMap[t_name].append(TValue((Res_value::_DataType)t_valueDom.attribute("type").toUInt(), t_valueDom.text()));
+				t_valueDom = t_valueDom.nextSiblingElement("item");
 			}
 		}
 		t_childDom = t_childDom.nextSiblingElement();
 	}
 	t_ReadFile.close();
+
+	uint32_t t_typeid = t_treeItem->data(0, eTreeItemRole_typeid).toUInt();
+	uint32_t t_specid = t_treeItem->data(0, eTreeItemRole_specid).toUInt();
+	const TTableTypeEx& t_type = m_Parser->getTableType(t_typeid, t_specid);
+	m_TW_value->clear();
+	for (int i = 0; i < t_type.entryValue.size(); ++i)
+	{
+		QSharedPointer<ResTable_entry> t_ptrEntry = t_type.entryValue[i];
+		if (t_ptrEntry.isNull())
+			continue;
+		if ((*t_ptrEntry).size == sizeof(ResTable_entry))
+		{
+			TTableValueEntry* t_pValueEntry = reinterpret_cast<TTableValueEntry*>(t_ptrEntry.get());
+			QString t_name = m_Parser->keyString(t_pValueEntry->key.index);
+			if (t_StringMap.contains(t_name))
+			{
+				TValue& t_value = t_StringMap[t_name];
+				if (t_value.type == Res_value::_DataType::TYPE_STRING)
+					m_Parser->setValue(t_typeid, t_specid, uint32_t(i), t_value.data, false);
+				else
+					m_Parser->setValue(t_typeid, t_specid, uint32_t(i), t_value.type, QEditDialog::qstringToData(t_value.type, t_value.data));
+			}
+		}
+		else
+		{
+			TTableMapEntryEx* t_pMapValue = reinterpret_cast<TTableMapEntryEx*>(t_ptrEntry.get());
+			QString t_name = m_Parser->keyString(t_pMapValue->key.index);
+			if (t_arrayMap.contains(t_name) && t_arrayMap[t_name].size() == t_pMapValue->tablemap.size())
+			{
+				QVector<TValue> t_values = t_arrayMap[t_name];
+				for (int j = 0; j < t_pMapValue->tablemap.size(); ++j)
+				{
+					TValue& t_value = t_values[j];
+					if (t_value.type == Res_value::_DataType::TYPE_STRING)
+						m_Parser->setValue(t_typeid, t_specid, uint32_t(i), uint32_t(j), t_value.data, false);
+					else
+						m_Parser->setValue(t_typeid, t_specid, uint32_t(i), uint32_t(j), t_value.type, QEditDialog::qstringToData(t_value.type, t_value.data));
+				}
+			}
+		}
+	}
+	refreshResTableType(t_typeid, t_specid);
+	QMessageBox::information(this, tr("information"), tr("Import was successful !"));
 }

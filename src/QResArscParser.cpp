@@ -831,23 +831,23 @@ quint32 QResArscParser::replaceString(quint32 _oldIndex, const QString& _str, bo
 	if (_force && m_StringPool.referenceCount[_oldIndex] == 1)
 		_force = false;
 
+	TStringPoolSpans t_newSpanEx;
+	QString t_newStr(_str);
+	decodeRichText(t_newStr, t_newSpanEx, m_StringPool);
+
+	if (t_newStr == m_StringPool.strings[_oldIndex])
+	{
+		if ((_oldIndex >= (uint32_t)m_StringPool.styles.size() && t_newSpanEx.spans.size() == 0) ||
+			(_oldIndex < (uint32_t)m_StringPool.styles.size() && t_newSpanEx == m_StringPool.styles[_oldIndex]))
+		{
+			qDebug() << "string no chang: " << _str;
+			return _oldIndex;
+		}
+	}
+
 	if (m_StringPool.referenceCount[_oldIndex] == 1 || _force)
 	{
 		//对于修改，比较复杂，这个字符串是否是富文本如果变化，需要先删除旧字符串，然后添加一个新的，否则就直接修改就好了。
-		TStringPoolSpans t_newSpanEx;
-		QString t_newStr(_str);
-		decodeRichText(t_newStr, t_newSpanEx, m_StringPool);
-
-		if (t_newStr == m_StringPool.strings[_oldIndex])
-		{
-			if ((_oldIndex >= (uint32_t)m_StringPool.styles.size() && t_newSpanEx.spans.size() == 0) ||
-				(_oldIndex < (uint32_t)m_StringPool.styles.size() && t_newSpanEx == m_StringPool.styles[_oldIndex]))
-			{
-				qDebug() << "string no chang: " << _str;
-				return _oldIndex;
-			}
-		}
-
 		if ((t_newSpanEx.spans.size() > 0) != (_oldIndex < (quint32)m_StringPool.styles.size()))
 		{
 			//字符串是否是富文本有变化，需要先删除旧字符串，然后添加一个新的
