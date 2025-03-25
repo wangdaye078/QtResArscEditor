@@ -32,9 +32,10 @@ void QResArscEditor::refreshArscTree()
 	m_TW_tree->clear();
 	const ResTable_package& t_tablePackage = m_Parser->tablePackage();
 	QTreeWidgetItem* t_packageItem = new QTreeWidgetItem(m_TW_tree);
-	t_packageItem->setText(0, WCHARToQString(t_tablePackage.name));
+	QString t_packageName = WCHARToQString(t_tablePackage.name);
+	t_packageItem->setText(0, t_packageName);
 	t_packageItem->setData(0, eTreeItemRole_type, eTreeItemType_package);
-
+	t_packageItem->setData(0, eTreeItemRole_package, t_packageName);
 	const TStringPool& t_typeString = m_Parser->typeString();
 	const QMap<uint, TTableTypeData>& t_typeDatas = m_Parser->tableTypeDatas();
 
@@ -46,6 +47,7 @@ void QResArscEditor::refreshArscTree()
 		QTreeWidgetItem* t_typeItem = new QTreeWidgetItem(t_packageItem);
 		t_typeItem->setText(0, t_typeString.strings[i.key() - 1]);
 		t_typeItem->setData(0, eTreeItemRole_type, eTreeItemType_type);
+		t_typeItem->setData(0, eTreeItemRole_package, t_packageName);
 		t_typeItem->setData(0, eTreeItemRole_typeid, i.key());
 		const QVector<TTableTypeEx>& t_tableType = t_typeDatas[i.key()].typeDatas;
 		for (int j = 0; j < t_tableType.size(); ++j)
@@ -53,6 +55,7 @@ void QResArscEditor::refreshArscTree()
 			QTreeWidgetItem* t_specItem = new QTreeWidgetItem(t_typeItem);
 			t_specItem->setText(0, tableConfig2String(t_typeString.strings[i.key() - 1], t_tableType[j].config));
 			t_specItem->setData(0, eTreeItemRole_type, eTreeItemType_spec);
+			t_specItem->setData(0, eTreeItemRole_package, t_packageName);
 			t_specItem->setData(0, eTreeItemRole_typeid, i.key());
 			t_specItem->setData(0, eTreeItemRole_specid, j);
 			t_specItem->setData(0, eTreeItemRole_tableConfig, QVariant::fromValue(t_tableType[j].config));
@@ -179,6 +182,8 @@ void QResArscEditor::onShowTreeContextMenu_slot(const QPoint& _pos)
 	if (m_TW_tree->currentItem() == NULL)
 		return;
 	QTreeWidgetItem* t_item = m_TW_tree->currentItem();
+	if (t_item->data(0, eTreeItemRole_type).toUInt() == eTreeItemType_package)
+		return;
 	QTreeWidgetItem* t_typeItem = t_item;
 	if (t_item->data(0, eTreeItemRole_type).toUInt() != eTreeItemType_type)
 		t_typeItem = t_item->parent();

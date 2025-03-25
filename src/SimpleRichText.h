@@ -7,7 +7,7 @@
 #ifndef SimpleRichText_h__
 #define SimpleRichText_h__
 #include <QMap>
-#include "ResArscStruct.h"
+#include "StringPoolExtend.h"
 
 //需要修改QMap.h文件，找到friend class QMultiMap<Key, T>，在后面加入friend class QMultiMap_modify<Key, T>;大概有3处
 template <class Key, class T>
@@ -76,9 +76,4 @@ public:
 	}
 };
 
-extern void encodeRichText(QString& _input, const TStringPoolSpans& _spanEx, const TStringPool& _stringPool);
-extern void decodeRichText(QString& _input, TStringPoolSpans& _spanEx, const TStringPool& _stringPool, int _endPos = -1);
-
-extern QString utf8_to_QString(const char* _pBuff, quint32 _len);
-extern QByteArray QString_to_utf8(const QString& _str);
 #endif // SimpleRichText_h__

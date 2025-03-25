@@ -18,6 +18,7 @@ enum ETreeItemType
 enum ETreeItemRole
 {
 	eTreeItemRole_type = Qt::UserRole,
+	eTreeItemRole_package,
 	eTreeItemRole_typeid,
 	eTreeItemRole_specid,
 	eTreeItemRole_tableConfig

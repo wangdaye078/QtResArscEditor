@@ -7,24 +7,15 @@
 #ifndef QResArscParser_h__
 #define QResArscParser_h__
 #include <QObject>
-#include "ResArscStruct.h"
+#include "StringPoolExtend.h"
 
 class QPublicFinal;
-
-template<typename T>
-T readValue(const char*& _buff)
-{
-	T t = *reinterpret_cast<const T*>(_buff);
-	_buff += sizeof(T);
-	return t;
-}
 
 struct TTableTypeData	//一个资源类
 {
 	TTableTypeSpecEx typeSpec;	//包括这个类的一些基础数据
 	QVector<TTableTypeEx> typeDatas;	//和多个分组的具体数据
 };
-typedef	std::function< void(Res_value::_DataType, uint32_t&) > TRAVERSE_STRIDX_CALLBACK;
 
 class QResArscParser : public QObject
 {
@@ -63,30 +54,20 @@ private:
 
 	//返回这个字符串的新index
 	quint32 replaceString(quint32 _oldIdx, const QString& _str, bool _force = false);  //_force，当引用数大于1时也修改该字符串，而不是重新生成一个，会导致所有使用该字符串的都改变
-	quint32 insertString(const QString& _str);
-	void deleteString(quint32 _index, bool _force = false);
 	//用于遍历所有值，可用来修改字符串引用，查找某个值是否被使用等
 	void traversalAllValue(TRAVERSE_STRIDX_CALLBACK _callBack);
 private:
-	uint parserStrPool(const char* _pBegin, TStringPool& _StringPool);
-	uint parserTablePackage(const char* _pBegin);
-
-	void writePoolSpan(QByteArray& _buff, const TStringPoolSpans& _span);
-	void writeStrPool(QByteArray& _buff, const TStringPool& _StringPool);
 	void writeTablePackage(QByteArray& _buff);
 	void writeTableTypeSpec(QByteArray& _buff, const TTableTypeSpecEx& _span);
 	void writeTableType(QByteArray& _buff, const TTableTypeEx& _type);
 	void writeTableMapEntry(QByteArray& _buff, const TTableMapEntryEx* _mapEntry);
 
-	void readPoolSpan(TStringPoolSpans& _span, const char* _pBuff, TStringPool& _stringPool);
+	uint readTablePackage(const char* _pBegin);
 	void readTableTypeSpec(TTableTypeSpecEx& _span, const char* _pBuff);
-	TTableMapEntryEx* readTableMapEntry(TTableMapEntryEx& _map, const char* _pBuff);
 	void readTableType(TTableTypeEx& _type, const char* _pBegin);
-	void initStringReferenceCount(void);
+	TTableMapEntryEx* readTableMapEntry(TTableMapEntryEx& _map, const char* _pBuff);
+
 	QString getStyleString(qint32 _strIndex);
-	//返回指定字符串的索引值，如果是插入新字符串，新字符串的引用计数为0，如果是旧字符串，则引用计数不变，都需要在后续处理
-	quint32 insertSimpleString(const QString& _str, bool& _isNew);
-	quint32 insertRichString(const QString& _str, TStringPoolSpans& _span, bool& _isNew);
 
 private:
 	TStringPool m_StringPool;
@@ -94,7 +75,6 @@ private:
 	ResTable_package m_tablePackage;
 	TStringPool m_typeStringPool;
 	TStringPool m_keyStringPool;
-
 	QMap<uint, TTableTypeData> m_tableTypeDatas;
 
 	QPublicFinal* m_publicFinal;

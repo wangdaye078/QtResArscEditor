@@ -21,6 +21,9 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
+    <Filter Include="utf8">
+      <UniqueIdentifier>{ae6f8a82-e3a0-43da-85b2-20bf4236eee2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="QResArscEditorUI.qrc">
@@ -46,9 +49,6 @@
     <ClCompile Include="src\SimpleRichText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utf8.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\QEditDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +60,15 @@
     </ClCompile>
     <ClCompile Include="src\QAddLocaleDialog.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StringPoolExtend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QUtf8.cpp">
+      <Filter>utf8</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utf8.cpp">
+      <Filter>utf8</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -95,8 +104,14 @@
     <ClInclude Include="src\SimpleRichText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utf8.h">
+    <ClInclude Include="src\StringPoolExtend.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utf8.h">
+      <Filter>utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QUtf8.h">
+      <Filter>utf8</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

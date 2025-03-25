@@ -109,7 +109,9 @@
     <ClCompile Include="src\QResArscEditor.cpp" />
     <ClCompile Include="src\QResArscEditorUI.cpp" />
     <ClCompile Include="src\QResArscParser.cpp" />
+    <ClCompile Include="src\QUtf8.cpp" />
     <ClCompile Include="src\ResArscStruct.cpp" />
+    <ClCompile Include="src\StringPoolExtend.cpp" />
     <ClCompile Include="src\SimpleRichText.cpp" />
     <ClCompile Include="src\utf8.cpp" />
     <QtRcc Include="QResArscEditorUI.qrc" />
@@ -123,6 +125,8 @@
     <QtMoc Include="src\QAppendDialog.h" />
     <QtMoc Include="src\QPublicFinal.h" />
     <QtMoc Include="src\QAddLocaleDialog.h" />
+    <ClInclude Include="src\QUtf8.h" />
+    <ClInclude Include="src\StringPoolExtend.h" />
     <ClInclude Include="src\SimpleRichText.h" />
     <ClInclude Include="src\utf8.h" />
     <QtMoc Include="src\QResArscEditorUI.h" />

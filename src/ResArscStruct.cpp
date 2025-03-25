@@ -198,26 +198,4 @@ uint32_t getTableConfigMask(const ResTable_config& _tableConfig)
 		t_mask |= ACONFIGURATION_COLOR_MODE;
 	return t_mask;
 }
-void TStringPool::makeIndexs(void)
-{
-	strIndexs.clear();
 
-	for (int i = 0; i < strings.size(); ++i)
-	{
-		TRichString t_richStr;
-		if (i < styles.size())
-			t_richStr = TRichString(strings[i], styles[i]);
-		else
-			t_richStr.str = strings[i];
-
-		Q_ASSERT(!strIndexs.contains(t_richStr));
-		strIndexs.insert(t_richStr, quint32(i));
-	}
-}
-void TStringPool::reset(void)
-{
-	strings.resize(0);
-	styles.resize(0);
-	strIndexs.clear();
-	referenceCount.resize(0);
-}

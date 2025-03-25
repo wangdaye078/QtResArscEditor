@@ -477,6 +477,14 @@ struct TStringPoolSpans
 		//return spans == _other.spans;		//应该不是我的问题，是C++标准的变化，导致这个会编译错误。
 		return std::equal(spans.cbegin(), spans.cend(), _other.spans.cbegin(), _other.spans.cend());
 	}
+	void moveSpan(uint32_t _beginIdx, int _step)
+	{
+		for (int i = 0; i < spans.size(); ++i)
+		{
+			if (spans[i].name.index > _beginIdx)
+				spans[i].name.index += _step;
+		}
+	}
 };
 
 struct TTableTypeSpecEx :public ResTable_typeSpec
@@ -533,17 +541,6 @@ struct TRichString
 	}
 	TRichString() {};
 	TRichString(const QString& _str, const TStringPoolSpans& _span) :str(_str), span(_span) {};
-};
-struct TStringPool
-{
-	ResStringPool_header StringPoolHeader;
-	QVector<QString> strings;
-	QVector<TStringPoolSpans> styles;
-
-	QMap<TRichString, uint32_t> strIndexs;
-	QVector<int> referenceCount;
-	void makeIndexs(void);
-	void reset(void);
 };
 
 extern const char* DIMENSION_UNIT_STRS[8];
