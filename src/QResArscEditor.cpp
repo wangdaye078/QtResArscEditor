@@ -519,7 +519,7 @@ void QResArscEditor::onImportLocaleTriggered_slot(void)
 	};
 	//先将翻译文件读入map中
 	QMap<QString, TValue> t_StringMap;
-	QMap<QString, QVector<TValue>> t_arrayMap;
+	QMap<QString, QMap<uint32_t, TValue>> t_arrayMap;
 	QDomElement t_root = t_domTree.documentElement();
 	for (QDomElement t_childDom = t_root.firstChildElement(); !t_childDom.isNull(); t_childDom = t_childDom.nextSiblingElement())
 	{
@@ -529,7 +529,7 @@ void QResArscEditor::onImportLocaleTriggered_slot(void)
 			t_StringMap.insert(t_name, TValue((Res_value::_DataType)t_childDom.attribute("type").toUInt(), t_childDom.text()));
 		else if (t_tagName == "string-array")
 			for (QDomElement t_valueDom = t_childDom.firstChildElement("item"); !t_valueDom.isNull(); t_valueDom = t_valueDom.nextSiblingElement("item"))
-				t_arrayMap[t_name].append(TValue((Res_value::_DataType)t_valueDom.attribute("type").toUInt(), t_valueDom.text()));
+				t_arrayMap[t_name].insert(QStringToUint(t_valueDom.attribute("name")), TValue((Res_value::_DataType)t_valueDom.attribute("type").toUInt(), t_valueDom.text()));
 	}
 	t_ReadFile.close();
 	//然后根据值的名字来查找翻译，这样即使后续版本值的ID发生了变化（ID是编译器自动产生的，不同版本，同一个值的ID不能保证不变），
@@ -561,12 +561,14 @@ void QResArscEditor::onImportLocaleTriggered_slot(void)
 		{
 			TTableMapEntry* t_pMapValue = reinterpret_cast<TTableMapEntry*>(t_ptrEntry.get());
 			QString t_name = t_tablePackage.getKeyString(t_pMapValue->key.index);
-			if (!t_arrayMap.contains(t_name) || t_arrayMap[t_name].size() != t_pMapValue->tablemap.size())
+			if (!t_arrayMap.contains(t_name))// || t_arrayMap[t_name].size() != t_pMapValue->tablemap.size())
 				continue;
-			QVector<TValue> t_values = t_arrayMap[t_name];
+			const QMap<uint32_t, TValue>& t_values = t_arrayMap[t_name];
 			for (int j = 0; j < t_pMapValue->tablemap.size(); ++j)
 			{
-				TValue& t_value = t_values[j];
+				if (!t_values.contains(t_pMapValue->tablemap[j].name.indent))
+					continue;
+				const TValue& t_value = t_values[t_pMapValue->tablemap[j].name.indent];
 				if (t_value.type == Res_value::_DataType::TYPE_STRING)
 					m_Parser->setValue(t_tablePackage, t_typeid, t_specid, uint32_t(i), uint32_t(j), t_value.data, false);
 				else
