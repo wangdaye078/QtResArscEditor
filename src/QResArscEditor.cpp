@@ -100,8 +100,8 @@ void QResArscEditor::refreshResTableType(const TTablePackage& _tablePackage, qui
 		{
 			TTableMapEntry* t_pMapValue = reinterpret_cast<TTableMapEntry*>(t_ptrEntry.get());
 			QTreeWidgetItem* t_mapItem = new QTreeWidgetItem(m_TW_value);
-			widgetItemSetData(t_mapItem, eValueItemType_array, t_pMapValue->key.index, i,
-				(uint32_t)Res_value::_DataType::TYPE_NULL, QString("0x7f%1%2").arg(_typeid, 2, 16, QChar('0')).arg(i, 4, 16, QChar('0')));
+			widgetItemSetData(t_mapItem, eValueItemType_array, t_pMapValue->key.index,
+				(uint32_t)Res_value::_DataType::TYPE_NULL, i, QString("0x7f%1%2").arg(_typeid, 2, 16, QChar('0')).arg(i, 4, 16, QChar('0')));
 			t_mapItem->setText(1, _tablePackage.getKeyString(t_pMapValue->key.index));
 			t_mapItem->setToolTip(1, QString("0x%1").arg(t_pMapValue->key.index, 8, 16, QChar('0')));
 			for (quint32 j = 0; j < t_pMapValue->count; ++j)
