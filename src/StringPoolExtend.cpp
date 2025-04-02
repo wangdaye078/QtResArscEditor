@@ -3,7 +3,7 @@
 #include "QUtf8.h"
 #include "basicDefine.h"
 
-static quint32 writeStringLen_16(char* _pBuff, const QString& _str)
+static uint32_t writeStringLen_16(char* _pBuff, const QString& _str)
 {
 	quint16* t_pBuff = reinterpret_cast<quint16*>(_pBuff);
 	if (_str.size() < 0x8000)
@@ -18,10 +18,10 @@ static quint32 writeStringLen_16(char* _pBuff, const QString& _str)
 		return sizeof(quint16) * 2;
 	}
 }
-static quint32 writeStringLen_8(char* _pBuff, const QString& _str, QByteArray& _utf8Array)
+static uint32_t writeStringLen_8(char* _pBuff, const QString& _str, QByteArray& _utf8Array)
 {
 	qint8* t_pBuff = reinterpret_cast<qint8*>(_pBuff);
-	quint32 t_pos = 0;
+	uint32_t t_pos = 0;
 	if (_str.size() < 0x80)
 		t_pBuff[t_pos++] = _str.size();
 	else
@@ -39,7 +39,7 @@ static quint32 writeStringLen_8(char* _pBuff, const QString& _str, QByteArray& _
 	}
 	return t_pos;
 }
-static quint32 readStringLen_16(const char*& _pBuff)
+static uint32_t readStringLen_16(const char*& _pBuff)
 {
 	//看逻辑，UTF16字符串最长可以有0x7FFF FFFF长
 	quint16 t_u16len = readValue<quint16>(_pBuff);
@@ -82,28 +82,28 @@ static void writeString(QByteArray& _buff, const QString& _string, bool _isUTF8)
 	char t_len[4];
 	if (!_isUTF8)
 	{
-		quint32 t_lenlen = writeStringLen_16(t_len, _string);
+		uint32_t t_lenlen = writeStringLen_16(t_len, _string);
 		_buff.append(t_len, t_lenlen);
 		_buff.append(reinterpret_cast<const char*>(_string.utf16()), (_string.length() + 1) * sizeof(ushort));
 	}
 	else
 	{
 		QByteArray t_utf8Array;
-		quint32 t_lenlen = writeStringLen_8(t_len, _string, t_utf8Array);
+		uint32_t t_lenlen = writeStringLen_8(t_len, _string, t_utf8Array);
 		_buff.append(t_len, t_lenlen);
 		_buff.append(t_utf8Array.data(), t_utf8Array.size() + 1);
 	}
 }
 //用于计算引用计数
-static void referenceCountInc(Res_value::_DataType _type, quint32& _index, QVector<int>* _referenceCount)
+static void referenceCountInc(Res_value::_DataType _type, uint32_t& _index, QVector<int>* _referenceCount)
 {
 	if (_type != Res_value::_DataType::TYPE_STRING)
 		return;
-	Q_ASSERT(_index < (quint32)_referenceCount->size());
+	Q_ASSERT(_index < (uint32_t)_referenceCount->size());
 	(*_referenceCount)[_index]++;
 }
 //_beginIdx后面的所有值都加_addValue
-static void incIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _beginIndex, int _addValue)
+static void incIdxValue(Res_value::_DataType _type, uint32_t& _index, uint32_t _beginIndex, int _addValue)
 {
 	if (_type != Res_value::_DataType::TYPE_STRING)
 		return;
@@ -111,7 +111,7 @@ static void incIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _be
 		_index += _addValue;
 }
 //将某个值所有的引用都改成另一个值
-static void changIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _oldIdx, quint32 _newIdx, int* _count)
+static void changIdxValue(Res_value::_DataType _type, uint32_t& _index, uint32_t _oldIdx, uint32_t _newIdx, int* _count)
 {
 	if (_type != Res_value::_DataType::TYPE_STRING)
 		return;
@@ -124,99 +124,101 @@ static void changIdxValue(Res_value::_DataType _type, quint32& _index, quint32 _
 }
 
 //-----------------------------------------------------------
+TStringPool::TStringPool()
+{
+
+}
 void TStringPool::makeIndexs(void)
 {
-	strIndexs.clear();
+	m_strIndexs.clear();
 
-	for (int i = 0; i < strings.size(); ++i)
+	for (int i = 0; i < m_strings.size(); ++i)
 	{
 		TRichString t_richStr;
-		if (i < styles.size())
-			t_richStr = TRichString(strings[i], styles[i]);
+		if (i < m_styles.size())
+			t_richStr = TRichString(m_strings[i], m_styles[i]);
 		else
-			t_richStr.str = strings[i];
+			t_richStr.str = m_strings[i];
 
-		Q_ASSERT(!strIndexs.contains(t_richStr));
-		strIndexs.insert(t_richStr, quint32(i));
+		Q_ASSERT(!m_strIndexs.contains(t_richStr));
+		m_strIndexs.insert(t_richStr, uint32_t(i));
 	}
 }
 void TStringPool::reset(void)
 {
-	strings.resize(0);
-	styles.resize(0);
-	strIndexs.clear();
-	referenceCount.resize(0);
+	m_strings.resize(0);
+	m_styles.resize(0);
+	m_strIndexs.clear();
+	m_referenceCounts.resize(0);
 }
 void TStringPool::readStrPool(const char* _pBegin)
 {
-	StringPoolHeader = *reinterpret_cast<const ResStringPool_header*>(_pBegin);
-	Q_ASSERT(StringPoolHeader.header.type == RES_TYPE::RES_STRING_POOL_TYPE);
-	const char* t_pBuff = _pBegin + sizeof(StringPoolHeader);
+	m_stringPoolHeader = *reinterpret_cast<const ResStringPool_header*>(_pBegin);
+	Q_ASSERT(m_stringPoolHeader.header.type == RES_TYPE::RES_STRING_POOL_TYPE);
+	const char* t_pBuff = _pBegin + sizeof(m_stringPoolHeader);
 
-	QVector<quint32> t_stringOffsets(StringPoolHeader.stringCount);
-	memcpy(t_stringOffsets.data(), t_pBuff, StringPoolHeader.stringCount * sizeof(quint32));
-	t_pBuff += StringPoolHeader.stringCount * sizeof(quint32);
-	QVector<quint32> t_styleOffsets(StringPoolHeader.styleCount);
-	memcpy(t_styleOffsets.data(), t_pBuff, StringPoolHeader.styleCount * sizeof(quint32));
+	QVector<uint32_t> t_stringOffsets(m_stringPoolHeader.stringCount);
+	memcpy(t_stringOffsets.data(), t_pBuff, m_stringPoolHeader.stringCount * sizeof(uint32_t));
+	t_pBuff += m_stringPoolHeader.stringCount * sizeof(uint32_t);
+	QVector<uint32_t> t_styleOffsets(m_stringPoolHeader.styleCount);
+	memcpy(t_styleOffsets.data(), t_pBuff, m_stringPoolHeader.styleCount * sizeof(uint32_t));
 
-	bool t_isUTF8 = (StringPoolHeader.flags & ResStringPool_header::UTF8_FLAG) != 0;
+	bool t_isUTF8 = (m_stringPoolHeader.flags & ResStringPool_header::UTF8_FLAG) != 0;
 
-	t_pBuff = _pBegin + StringPoolHeader.stringsStart;
-	strings.resize(StringPoolHeader.stringCount);
-	for (uint i = 0; i < StringPoolHeader.stringCount; i++)
-		readString(strings[i], t_pBuff + t_stringOffsets[i], t_isUTF8);
+	t_pBuff = _pBegin + m_stringPoolHeader.stringsStart;
+	m_strings.resize(m_stringPoolHeader.stringCount);
+	for (uint i = 0; i < m_stringPoolHeader.stringCount; i++)
+		readString(m_strings[i], t_pBuff + t_stringOffsets[i], t_isUTF8);
 
-	t_pBuff = _pBegin + StringPoolHeader.stylesStart;
-	styles.resize(StringPoolHeader.styleCount);
-	for (uint i = 0; i < StringPoolHeader.styleCount; i++)
-		readPoolSpan(styles[i], t_pBuff + t_styleOffsets[i]);
+	t_pBuff = _pBegin + m_stringPoolHeader.stylesStart;
+	m_styles.resize(m_stringPoolHeader.styleCount);
+	for (uint i = 0; i < m_stringPoolHeader.styleCount; i++)
+		readPoolSpan(m_styles[i], t_pBuff + t_styleOffsets[i]);
 
 	makeIndexs();
 }
 void TStringPool::writeStrPool(QByteArray& _buff) const
 {
 	//因为后面还要修改，_buff的内存随着变大申请新内存，可能会移动到别处，所以不能保存指针使用。只能随用随取。
-	qint32 t_stringPoolHeader_pos = _buff.size();
-	_buff.append(reinterpret_cast<const char*>(&StringPoolHeader), sizeof(StringPoolHeader));
+	int t_stringPoolHeader_pos = _buff.size();
+	_buff.append(reinterpret_cast<const char*>(&m_stringPoolHeader), sizeof(m_stringPoolHeader));
 
-	qint32 t_stringOffsets_pos = _buff.size();
-	QVector<qint32> t_tmp(StringPoolHeader.stringCount);
-	_buff.append(reinterpret_cast<const char*>(t_tmp.data()), StringPoolHeader.stringCount * sizeof(qint32));
+	int t_stringOffsets_pos = _buff.size();
+	QVector<uint32_t> t_tmp(m_stringPoolHeader.stringCount);
+	_buff.append(reinterpret_cast<const char*>(t_tmp.data()), m_stringPoolHeader.stringCount * sizeof(uint32_t));
 
-	qint32 t_styleOffsets_pos = _buff.size();
-	t_tmp.resize(StringPoolHeader.styleCount);
-	_buff.append(reinterpret_cast<const char*>(t_tmp.data()), StringPoolHeader.styleCount * sizeof(qint32));
+	int t_styleOffsets_pos = _buff.size();
+	t_tmp.resize(m_stringPoolHeader.styleCount);
+	_buff.append(reinterpret_cast<const char*>(t_tmp.data()), m_stringPoolHeader.styleCount * sizeof(uint32_t));
 
-	bool t_isUTF8 = (StringPoolHeader.flags & ResStringPool_header::UTF8_FLAG) != 0;
+	bool t_isUTF8 = (m_stringPoolHeader.flags & ResStringPool_header::UTF8_FLAG) != 0;
 
 	reinterpret_cast<ResStringPool_header*>(_buff.data() + t_stringPoolHeader_pos)->stringsStart = _buff.size() - t_stringPoolHeader_pos;
 	qint32 t_stringsBegin_pos = _buff.size();
-	for (uint i = 0; i < StringPoolHeader.stringCount; i++)
+	for (uint i = 0; i < m_stringPoolHeader.stringCount; i++)
 	{
-		reinterpret_cast<quint32*>(_buff.data() + t_stringOffsets_pos)[i] = _buff.size() - t_stringsBegin_pos;
-		writeString(_buff, strings[i], t_isUTF8);
+		reinterpret_cast<uint32_t*>(_buff.data() + t_stringOffsets_pos)[i] = _buff.size() - t_stringsBegin_pos;
+		writeString(_buff, m_strings[i], t_isUTF8);
 	}
-
-	qint32 t_alignmentFill = (4 - (_buff.size() % 4)) % 4;
+	//字符串部分最后需要4字节对齐。
+	int t_alignmentFill = (4 - (_buff.size() % 4)) % 4;
 	if (t_alignmentFill > 0)
 	{
 		const char t_tmp[4] = { 0,0,0,0 };
 		_buff.append(t_tmp, t_alignmentFill);
 	}
 
-	if (StringPoolHeader.styleCount > 0)
+	if (m_stringPoolHeader.styleCount > 0)
 	{
 		reinterpret_cast<ResStringPool_header*>(_buff.data() + t_stringPoolHeader_pos)->stylesStart = _buff.size() - t_stringPoolHeader_pos;
-		qint32 t_stylesBegin_pos = _buff.size();
-		for (uint i = 0; i < StringPoolHeader.styleCount; i++)
+		int t_stylesBegin_pos = _buff.size();
+		for (uint i = 0; i < m_stringPoolHeader.styleCount; i++)
 		{
-			qint32 t_offset = _buff.size() - t_stylesBegin_pos;
-			quint32* t_p = reinterpret_cast<quint32*>(_buff.data() + t_styleOffsets_pos);
-			reinterpret_cast<quint32*>(_buff.data() + t_styleOffsets_pos)[i] = _buff.size() - t_stylesBegin_pos;
-			writePoolSpan(_buff, styles[i]);
+			reinterpret_cast<uint32_t*>(_buff.data() + t_styleOffsets_pos)[i] = _buff.size() - t_stylesBegin_pos;
+			writePoolSpan(_buff, m_styles[i]);
 		}
 		//PoolSpan以2个0xFFFFFFFF结束
-		quint32 t_tmp[2] = { 0xFFFFFFFF,0xFFFFFFFF };
+		uint32_t t_tmp[2] = { (uint32_t)ResStringPool_span::END, (uint32_t)ResStringPool_span::END };
 		_buff.append(reinterpret_cast<char*>(t_tmp), sizeof(t_tmp));
 	}
 	reinterpret_cast<ResTable_package*>(_buff.data() + t_stringPoolHeader_pos)->header.size = _buff.size() - t_stringPoolHeader_pos;
@@ -226,115 +228,140 @@ void TStringPool::readPoolSpan(TStringPoolSpans& _span, const char* _pBuff)
 	while (*reinterpret_cast<const uint*>(_pBuff) != ResStringPool_span::END)
 	{
 		ResStringPool_span t_span = *reinterpret_cast<const ResStringPool_span*>(_pBuff);
-		_span.spans.append(t_span);
+		_span.append(t_span);
 		_pBuff += sizeof(ResStringPool_span);
 	}
 }
 void TStringPool::writePoolSpan(QByteArray& _buff, const TStringPoolSpans& _span)
 {
-	_buff.append(reinterpret_cast<const char*>(_span.spans.data()), _span.spans.size() * sizeof(ResStringPool_span));
-	quint32 t_tmp = ResStringPool_span::END;
+	_buff.append(reinterpret_cast<const char*>(_span.data()), _span.size() * sizeof(ResStringPool_span));
+	uint32_t t_tmp = ResStringPool_span::END;
 	_buff.append(reinterpret_cast<const char*>(&t_tmp), sizeof(t_tmp));
 }
-quint32 TStringPool::insertString(const QString& _str, uint32_t _addRefCount, bool* _isInsert, TTRAVERSAL_ALL_VALUE _traversalAllValue)
+QString TStringPool::getStyleString(uint32_t _strIndex) const
 {
-	TStringPoolSpans t_spanEx;
-	QString t_str(_str);
-	decodeRichText(t_str, t_spanEx, *this);
+	//安卓编译器会把所有带格式的字符串都放在前面，所以styles的数量会明显比strings少
+	//如果要加一个带格式的字符串，则需要把所有普通字符串都后移，然后把所有引用的地方都修改
+	Q_ASSERT(_strIndex < (uint32_t)m_strings.size());
+	QString t_str = m_strings[_strIndex];
+	if (_strIndex < (uint32_t)m_styles.size())
+		t_str = encodeRichText(t_str, m_styles[_strIndex], *this);
+
+	return t_str.replace(QChar(0x0A), QString("\\n"));
+}
+QString TStringPool::getString(uint32_t _strIndex) const
+{
+	Q_ASSERT(_strIndex < (uint32_t)m_strings.size());
+	return m_strings[_strIndex];
+}
+uint32_t TStringPool::getStringIndex(const TRichString& _richStr) const
+{
+	if (m_strIndexs.contains(_richStr))
+		return m_strIndexs[_richStr];
+	return ResStringPool_ref::END;
+}
+uint32_t TStringPool::incReferenceCount(uint32_t _strIndex, int _inc)
+{
+	Q_ASSERT(_strIndex < (uint32_t)m_strings.size());
+	Q_ASSERT(m_referenceCounts[_strIndex] + _inc > 0);
+	m_referenceCounts[_strIndex] += _inc;
+	return m_referenceCounts[_strIndex];
+}
+uint32_t TStringPool::insertString(const TRichString& _rich, uint32_t _addRefCount, bool* _isInsert, TTRAVERSAL_ALL_VALUE _traversalAllValue)
+{
 	uint32_t t_newIndex = 0;
-	if (t_spanEx.spans.size() > 0)
-		t_newIndex = insertRichString(t_str, t_spanEx, _isInsert, _traversalAllValue);
+	if (_rich.spans.size() > 0)
+		t_newIndex = insertRichString(_rich, _isInsert, _traversalAllValue);
 	else
-		t_newIndex = insertSimpleString(t_str, _isInsert);
-	referenceCount[t_newIndex] += _addRefCount;
-	qDebug() << "number of citations add " << _addRefCount << " chang to:" << referenceCount[t_newIndex] << " :" << strings[t_newIndex];
+		t_newIndex = insertSimpleString(_rich.str, _isInsert);
+	m_referenceCounts[t_newIndex] += _addRefCount;
+	qDebug() << "number of citations add " << _addRefCount << " chang to:" << m_referenceCounts[t_newIndex] << " :" << m_strings[t_newIndex];
 	return t_newIndex;
 }
-quint32 TStringPool::insertSimpleString(const QString& _str, bool* _isInsert)
+uint32_t TStringPool::insertSimpleString(const QString& _str, bool* _isInsert)
 {
 	TRichString t_richStr;
 	t_richStr.str = _str;
-	if (strIndexs.contains(t_richStr))
+	if (m_strIndexs.contains(t_richStr))
 	{
 		if (_isInsert != NULL)
 			*_isInsert = false;
-		return strIndexs[t_richStr];
+		return m_strIndexs[t_richStr];
 	}
 	else
 	{
 		qDebug() << "insert simple string:" + _str;
 		if (_isInsert != NULL)
 			*_isInsert = true;
-		strings.append(_str);
-		referenceCount.append(0);
-		strIndexs.insert(t_richStr, StringPoolHeader.stringCount);
+		m_strings.append(_str);
+		m_referenceCounts.append(0);
+		m_strIndexs.insert(t_richStr, m_stringPoolHeader.stringCount);
 		//加在最后，所以返回的索引值就是原来的个数，并且因为加在最后，所以其他的索引都不需要改动
-		return StringPoolHeader.stringCount++;
+		return m_stringPoolHeader.stringCount++;
 	}
 }
-quint32 TStringPool::insertRichString(const QString& _str, TStringPoolSpans& _span, bool* _isInsert, TTRAVERSAL_ALL_VALUE _traversalAllValue)
+uint32_t TStringPool::insertRichString(const TRichString& _rich, bool* _isInsert, TTRAVERSAL_ALL_VALUE _traversalAllValue)
 {
-	TRichString t_richStr(_str, _span);
-	if (strIndexs.contains(t_richStr))
+	if (m_strIndexs.contains(_rich))
 	{
 		if (_isInsert != NULL)
 			*_isInsert = false;
-		return strIndexs[t_richStr];
+		return m_strIndexs[_rich];
 	}
 	else
 	{
 		//先遍历所有字符串引用，将所有简单字符串的编号+1，在富文本字符串的最后添加
-		qDebug() << "insert rich string:" + _str;
+		qDebug() << "insert rich string:" + _rich.str;
 		if (_isInsert != NULL)
 			*_isInsert = true;
 
 		//插入数据
-		quint32 t_idx = styles.size();
-		strings.insert(t_idx, _str);
-		referenceCount.insert(t_idx, 0);
-		styles.append(_span);
+		uint32_t t_idx = m_styles.size();
+		m_strings.insert(t_idx, _rich.str);
+		m_referenceCounts.insert(t_idx, 0);
+		m_styles.append(_rich.spans);
 
-		for (QMap<TRichString, quint32>::iterator i = strIndexs.begin(); i != strIndexs.end(); ++i)
+		for (QMap<TRichString, uint32_t>::iterator i = m_strIndexs.begin(); i != m_strIndexs.end(); ++i)
 			if (i.value() >= t_idx)		//包括原来的t_idx，也得往后挪一个
 				i.value()++;
-		strIndexs.insert(t_richStr, t_idx);
+		m_strIndexs.insert(_rich, t_idx);
 
 		//遍历修改所有需要修改的引用数据
-		_traversalAllValue(std::bind(&incIdxValue, std::placeholders::_1, std::placeholders::_2, styles.size() - 1, 1));
+		_traversalAllValue(std::bind(&incIdxValue, std::placeholders::_1, std::placeholders::_2, m_styles.size() - 1, 1));
 
-		StringPoolHeader.stringCount++;
-		return StringPoolHeader.styleCount++;
+		m_stringPoolHeader.stringCount++;
+		return m_stringPoolHeader.styleCount++;
 	}
 }
-bool TStringPool::deleteString(quint32 _index, bool _force, TTRAVERSAL_ALL_VALUE _traversalAllValue)
+bool TStringPool::deleteString(uint32_t _index, bool _force, TTRAVERSAL_ALL_VALUE _traversalAllValue)
 {
 	//如果引用数大于1，并且不是强制删除，那减引用数，否则删字符串
-	if (referenceCount[_index] > 1 && !_force)
+	if (m_referenceCounts[_index] > 1 && !_force)
 	{
-		qDebug() << "number of citations --:" + strings[_index];
-		referenceCount[_index]--;
+		qDebug() << "number of citations --:" + m_strings[_index];
+		m_referenceCounts[_index]--;
 		return false;
 	}
 	else
 	{
 		TRichString t_richStr;
-		t_richStr.str = strings[_index];
-		qDebug() << "delete string:" + strings[_index];
+		t_richStr.str = m_strings[_index];
+		qDebug() << "delete string:" + m_strings[_index];
 		//删除实际字符串
-		StringPoolHeader.stringCount--;
-		strings.remove(_index, 1);
+		m_stringPoolHeader.stringCount--;
+		m_strings.remove(_index, 1);
 		//删除可能的格式表
-		if (_index < (quint32)styles.size())
+		if (_index < (uint32_t)m_styles.size())
 		{
-			t_richStr.span = styles[_index];
-			styles.remove(_index, 1);
-			StringPoolHeader.styleCount--;
+			t_richStr.spans = m_styles[_index];
+			m_styles.remove(_index, 1);
+			m_stringPoolHeader.styleCount--;
 		}
 		//删除引用计数
-		referenceCount.remove(_index, 1);
+		m_referenceCounts.remove(_index, 1);
 		//修改字符串内容和索引的对应关系
-		strIndexs.remove(t_richStr);
-		for (QMap<TRichString, quint32>::iterator i = strIndexs.begin(); i != strIndexs.end(); ++i)
+		m_strIndexs.remove(t_richStr);
+		for (QMap<TRichString, uint32_t>::iterator i = m_strIndexs.begin(); i != m_strIndexs.end(); ++i)
 			if (i.value() > _index)
 				i.value()--;
 		//修改所有用到索引的地方，大于这个索引的，都减1
@@ -342,35 +369,27 @@ bool TStringPool::deleteString(quint32 _index, bool _force, TTRAVERSAL_ALL_VALUE
 		return true;
 	}
 }
-quint32 TStringPool::replaceString(quint32 _oldIndex, const QString& _str, bool _force, TTRAVERSAL_ALL_VALUE _traversalAllValue)
+uint32_t TStringPool::replaceString(uint32_t _oldIndex, const TRichString& _newRich, bool _force, TTRAVERSAL_ALL_VALUE _traversalAllValue)
 {
 	//引用数等于1的强制修改，等于不强制
-	if (_force && referenceCount[_oldIndex] == 1)
+	if (_force && m_referenceCounts[_oldIndex] == 1)
 		_force = false;
 
-	TStringPoolSpans t_newSpan;
-	QString t_newStr(_str);
-	decodeRichText(t_newStr, t_newSpan, *this);
-
-	if (t_newStr == strings[_oldIndex])
+	if (m_strIndexs.contains(_newRich) && m_strIndexs[_newRich] == _oldIndex)
 	{
-		if ((_oldIndex >= (uint32_t)styles.size() && t_newSpan.spans.size() == 0) ||
-			(_oldIndex < (uint32_t)styles.size() && t_newSpan == styles[_oldIndex]))
-		{
-			qDebug() << "string no chang: " << _str;
-			return _oldIndex;
-		}
+		qDebug() << "string no chang: " << _newRich.str;
+		return _oldIndex;
 	}
 
-	if (referenceCount[_oldIndex] == 1 || _force)
+	if (m_referenceCounts[_oldIndex] == 1 || _force)
 	{
 		//对于修改，比较复杂，这个字符串是否是富文本如果变化，需要先删除旧字符串，然后添加一个新的，否则就直接修改就好了。
-		if ((t_newSpan.spans.size() > 0) != (_oldIndex < (quint32)styles.size()))
+		if ((_newRich.spans.size() > 0) != (_oldIndex < (uint32_t)m_styles.size()))
 		{
 			//字符串是否是富文本有变化，添加一个新的，删除老的。
-			uint32_t t_rCount = referenceCount[_oldIndex];
+			uint32_t t_rCount = m_referenceCounts[_oldIndex];
 			bool t_realInsert;	//是真的插入了新的，还是只是修改了引用数?
-			uint32_t t_newIndex = insertString(_str, t_rCount, &t_realInsert, _traversalAllValue);
+			uint32_t t_newIndex = insertString(_newRich, t_rCount, &t_realInsert, _traversalAllValue);
 			//真的插入了，而且插入的在_oldIndex之前，_oldIndex需要往后挪一位
 			if (t_realInsert && t_newIndex <= _oldIndex)
 				_oldIndex++;
@@ -378,7 +397,7 @@ quint32 TStringPool::replaceString(quint32 _oldIndex, const QString& _str, bool 
 			//将所有指向旧的字符串的，都指向新的。
 			int t_chgCount = 0;
 			_traversalAllValue(std::bind(&changIdxValue, std::placeholders::_1, std::placeholders::_2, _oldIndex, t_newIndex, &t_chgCount));
-			qDebug() << "find number of citations is " << t_chgCount << " :" << strings[_oldIndex];
+			qDebug() << "find number of citations is " << t_chgCount << " :" << m_strings[_oldIndex];
 			Q_ASSERT(t_chgCount == t_rCount);
 			//删除旧的
 			bool t_realDelete = deleteString(_oldIndex, _force, _traversalAllValue);
@@ -390,21 +409,16 @@ quint32 TStringPool::replaceString(quint32 _oldIndex, const QString& _str, bool 
 		else
 		{
 			//是否是富文本没有变化，直接修改
-			TRichString t_oldRichStr;
-			if (_oldIndex < (quint32)styles.size())
-				t_oldRichStr = TRichString(strings[_oldIndex], styles[_oldIndex]);
-			else
-				t_oldRichStr.str = strings[_oldIndex];
-			TRichString t_newRichStr(t_newStr, t_newSpan);
+			TRichString t_oldRichStr(m_strings[_oldIndex], _oldIndex < (uint32_t)m_styles.size() ? m_styles[_oldIndex] : TStringPoolSpans());
 
 			//如果新字符串和某个其他字符串相等，那就删除旧的，相等的那个引用加1
-			if (strIndexs.contains(t_newRichStr))
+			if (m_strIndexs.contains(_newRich))
 			{
 				//新指向的字符串加上引用数，然后把指向旧字符串的指向，都重定向到新字符串
-				uint32_t t_rCount = referenceCount[_oldIndex];
-				quint32 t_newIndex = strIndexs[t_newRichStr];
-				referenceCount[t_newIndex] += t_rCount;
-				qDebug() << "number of citations add " << t_rCount << " chang to " << referenceCount[t_newIndex] << " :" << strings[t_newIndex];
+				uint32_t t_rCount = m_referenceCounts[_oldIndex];
+				uint32_t t_newIndex = m_strIndexs[_newRich];
+				m_referenceCounts[t_newIndex] += t_rCount;
+				qDebug() << "number of citations add " << t_rCount << " chang to " << m_referenceCounts[t_newIndex] << " :" << m_strings[t_newIndex];
 
 				int t_chgCount = 0;
 				_traversalAllValue(std::bind(&changIdxValue, std::placeholders::_1, std::placeholders::_2, _oldIndex, t_newIndex, &t_chgCount));
@@ -418,14 +432,14 @@ quint32 TStringPool::replaceString(quint32 _oldIndex, const QString& _str, bool 
 			}
 			else
 			{
-				strIndexs.remove(t_oldRichStr);
-				qDebug() << "index: " << _oldIndex << " str:" << strings[_oldIndex] << " chang to:" << t_newStr;
-				strings[_oldIndex] = t_newStr;
-				strIndexs.insert(TRichString(t_newStr, t_newSpan), _oldIndex);
-				if (t_newSpan.spans.size() > 0)
+				m_strIndexs.remove(t_oldRichStr);
+				qDebug() << "index: " << _oldIndex << " str:" << m_strings[_oldIndex] << " chang to:" << _newRich.str;
+				m_strings[_oldIndex] = _newRich.str;
+				m_strIndexs.insert(_newRich, _oldIndex);
+				if (_newRich.spans.size() > 0)
 				{
-					Q_ASSERT(_oldIndex < (quint32)styles.size());
-					styles[_oldIndex] = t_newSpan;
+					Q_ASSERT(_oldIndex < (uint32_t)m_styles.size());
+					m_styles[_oldIndex] = _newRich.spans;
 				}
 				return _oldIndex;
 			}
@@ -434,21 +448,38 @@ quint32 TStringPool::replaceString(quint32 _oldIndex, const QString& _str, bool 
 	else
 	{
 		//原来的字符串只是引用数减1，然后加新字符串
-		referenceCount[_oldIndex]--;
-		qDebug() << "number of citations --:" + strings[_oldIndex];
-		return insertString(_str, 1, NULL, _traversalAllValue);
+		m_referenceCounts[_oldIndex]--;
+		qDebug() << "number of citations --:" + m_strings[_oldIndex];
+		return insertString(_newRich, 1, NULL, _traversalAllValue);
 	}
 }
 void TStringPool::initStringReferenceCount(TTRAVERSAL_ALL_VALUE _traversalAllValue)
 {
-	referenceCount = QVector<int>(strings.size(), 0);
+	m_referenceCounts = QVector<int>(m_strings.size(), 0);
 
-	_traversalAllValue(std::bind(&referenceCountInc, std::placeholders::_1, std::placeholders::_2, &referenceCount));
+	_traversalAllValue(std::bind(&referenceCountInc, std::placeholders::_1, std::placeholders::_2, &m_referenceCounts));
 
 	//如果一切正常，不应该有没用的字符串
-	for (int i = 0; i < referenceCount.size(); ++i)
+	for (int i = 0; i < m_referenceCounts.size(); ++i)
 	{
-		Q_ASSERT(referenceCount[i] != 0);
+		Q_ASSERT(m_referenceCounts[i] != 0);
 	}
-
+}
+void TStringPool::traversalAllValue(TRAVERSE_STRIDX_CALLBACK _callBack)
+{
+	for (int i = 0; i < m_styles.size(); ++i)
+	{
+		TStringPoolSpans& t_spans = m_styles[i];
+		for (int j = 0; j < t_spans.size(); ++j)
+			_callBack(Res_value::_DataType::TYPE_STRING, t_spans[j].name.index);
+	}
+	for (QMap<TRichString, uint32_t>::iterator i = m_strIndexs.begin(); i != m_strIndexs.end(); ++i)
+	{
+		//正常不应该这么搞，但是下面的修改并不会影响key的大小比较，所以应该没问题。
+		TRichString& t_richString = const_cast<TRichString&>(i.key());
+		for (int j = 0; j < t_richString.spans.size(); ++j)
+		{
+			_callBack(Res_value::_DataType::TYPE_STRING, t_richString.spans[j].name.index);
+		}
+	}
 }

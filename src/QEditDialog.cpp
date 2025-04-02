@@ -256,9 +256,9 @@ void QEditDialog::CreateControl(void)
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB4, 1);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB4, 1);
 }
-void QEditDialog::setResArscParser(QResArscParser* _p)
+void QEditDialog::setTablePackage(TTablePackage* _package)
 {
-	m_ResArscParser = _p;
+	m_tablePackage = _package;
 }
 void QEditDialog::setData(const ResTable_config& _config, uint32_t _type, uint32_t _data)
 {
@@ -290,22 +290,23 @@ void QEditDialog::onStackedCurrentChanged_slot(int _index)
 	switch (_index)
 	{
 	case 0:
-		m_TE_String->setPlainText(m_ResArscParser->resValue2String(t_value));
+		m_TE_String->setPlainText(m_tablePackage->resValue2String(t_value));
+		m_CB_ShowRichText->setChecked(false);
 		break;
 	case 1:
-		m_LE_Color->setText(m_ResArscParser->resValue2String(t_value));
+		m_LE_Color->setText(m_tablePackage->resValue2String(t_value));
 		break;
 	case 2:
-		m_LE_Digital->setText(m_ResArscParser->resValue2String(t_value));
+		m_LE_Digital->setText(m_tablePackage->resValue2String(t_value));
 		break;
 	case 3:
-		m_LE_Hex->setText(m_ResArscParser->resValue2String(t_value));
+		m_LE_Hex->setText(m_tablePackage->resValue2String(t_value));
 		break;
 	case 4:
 		m_CB_Boolen->setCurrentIndex(m_data == 0 ? 0 : 1);
 		break;
 	case 5:
-		m_LE_Reference->setText(m_ResArscParser->resValue2String(t_value));
+		m_LE_Reference->setText(m_tablePackage->resValue2String(t_value));
 		break;
 	}
 }
@@ -341,7 +342,7 @@ void QEditDialog::onReferenceTextChanged_slot(const QString& _text)
 	if (!t_ok)
 		return;
 
-	m_TE_Reference->setText(m_ResArscParser->getReferenceDestination(m_config, t_data));
+	m_TE_Reference->setText(m_tablePackage->getReferenceDestination(m_config, t_data));
 }
 void QEditDialog::onShowRichTextStateChanged_slot(int)
 {

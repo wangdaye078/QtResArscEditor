@@ -70,6 +70,9 @@
     <ClCompile Include="src\utf8.cpp">
       <Filter>utf8</Filter>
     </ClCompile>
+    <ClCompile Include="src\TablePackageExtend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\QResArscParser.h">
@@ -112,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="src\QUtf8.h">
       <Filter>utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TablePackageExtend.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

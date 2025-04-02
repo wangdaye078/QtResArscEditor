@@ -64,7 +64,7 @@ static QString unpackLanguageOrRegion(const char* _value, int _base)
 {
 	if ((_value[0] & 0x80) != 0)
 	{
-		char t_result[3];
+		char t_result[3] = { 0,0,0 };
 		t_result[0] = (char)(_base + (_value[1] & 0x1F));
 		t_result[1] = (char)(_base + ((_value[1] & 0xE0) >> 5) + ((_value[0] & 0x03) << 3));
 		t_result[2] = (char)(_base + ((_value[0] & 0x7C) >> 2));

@@ -6,22 +6,16 @@
 //********************************************************************
 #ifndef QResArscEditor_h__
 #define QResArscEditor_h__
-
 #include "QResArscEditorUI.h"
+#include "TablePackageExtend.h"
+
 class QResArscParser;
-enum ETreeItemType
-{
-	eTreeItemType_package,
-	eTreeItemType_type,
-	eTreeItemType_spec
-};
 enum ETreeItemRole
 {
 	eTreeItemRole_type = Qt::UserRole,
 	eTreeItemRole_package,
 	eTreeItemRole_typeid,
 	eTreeItemRole_specid,
-	eTreeItemRole_tableConfig
 };
 enum EValueItemType
 {
@@ -48,7 +42,9 @@ public:
 	~QResArscEditor();
 private:
 	void refreshArscTree();
-	void refreshResTableType(quint32 _typeid, quint32 _specid);
+	void onRefreshTablePackage(const QString& _name, const TTablePackage& _package);
+	void onRefreshTablePackageData(const QString& _packageName, ETreeItemType _type, uint32_t _id1, uint32_t _id2, const QString& _name);
+	void refreshResTableType(const TTablePackage& _tablePackage, quint32 _typeid, quint32 _specid);
 
 	void onOpenReleased_Slot(void);
 	void onSaveReleased_Slot(void);

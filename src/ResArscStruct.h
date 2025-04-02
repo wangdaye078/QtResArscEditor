@@ -62,6 +62,9 @@ struct ResStringPool_header
 };
 struct ResStringPool_ref
 {
+	enum {
+		END = 0xFFFFFFFF
+	};
 	uint32_t index;		// <comment = "Index into the string pool table">;
 	bool operator<(const ResStringPool_ref& _other) const
 	{
@@ -329,7 +332,7 @@ struct ResTable_config
 	};
 	uint32_t localeScriptWasComputed;	//bool只有1字节，这个是4字节
 	char localeNumberingSystem[8];
-	bool operator == (const ResTable_config& _other)
+	bool operator == (const ResTable_config& _other) const
 	{
 		if (imsi != _other.imsi)
 			return false;
@@ -367,6 +370,10 @@ struct ResTable_config
 struct ResTable_type
 {
 	ResChunk_header header;
+	enum
+	{
+		NO_ENTRY = 0xFFFFFFFF
+	};
 	uint8_t id;				//<comment = "The type identifier this chunk is holding">;
 	uint8_t res0;				//<comment = "Must be 0">;
 	uint16_t res1;			//<comment = "Must be 0">;
@@ -469,20 +476,20 @@ struct ResTable_map
 };
 #pragma pack(pop)
 
-struct TStringPoolSpans
+struct TStringPoolSpans :public QVector<ResStringPool_span>
 {
-	QVector<ResStringPool_span> spans;
+	//QVector<ResStringPool_span> spans;
 	bool operator == (const TStringPoolSpans& _other) const
 	{
 		//return spans == _other.spans;		//应该不是我的问题，是C++标准的变化，导致这个会编译错误。
-		return std::equal(spans.cbegin(), spans.cend(), _other.spans.cbegin(), _other.spans.cend());
+		return std::equal(this->cbegin(), this->cend(), _other.cbegin(), _other.cend());
 	}
 	void moveSpan(uint32_t _beginIdx, int _step)
 	{
-		for (int i = 0; i < spans.size(); ++i)
+		for (int i = 0; i < size(); ++i)
 		{
-			if (spans[i].name.index > _beginIdx)
-				spans[i].name.index += _step;
+			if ((*this)[i].name.index > _beginIdx)
+				(*this)[i].name.index += _step;
 		}
 	}
 };
@@ -496,10 +503,10 @@ struct TTableTypeSpecEx :public ResTable_typeSpec
 		return *this;
 	}
 };
-struct TTableMapEntryEx :public ResTable_map_entry
+struct TTableMapEntry :public ResTable_map_entry
 {
 	QVector<ResTable_map> tablemap;
-	TTableMapEntryEx& operator=(const ResTable_map_entry& _other)
+	TTableMapEntry& operator=(const ResTable_map_entry& _other)
 	{
 		*reinterpret_cast<ResTable_map_entry*>(this) = _other;
 		return *this;
@@ -526,21 +533,21 @@ struct TTableTypeEx :public ResTable_type
 struct TRichString
 {
 	QString str;
-	TStringPoolSpans span;
+	TStringPoolSpans spans;
 	bool operator<(const TRichString& _other) const
 	{
 		if (str < _other.str)
 			return true;
 		if (str > _other.str)
 			return false;
-		if (span.spans < _other.span.spans)
+		if (spans < _other.spans)
 			return true;
-		if (span.spans > _other.span.spans)
+		if (spans > _other.spans)
 			return false;
 		return false;	//相等
 	}
 	TRichString() {};
-	TRichString(const QString& _str, const TStringPoolSpans& _span) :str(_str), span(_span) {};
+	TRichString(const QString& _str, const TStringPoolSpans& _span) :str(_str), spans(_span) {};
 };
 
 extern const char* DIMENSION_UNIT_STRS[8];
