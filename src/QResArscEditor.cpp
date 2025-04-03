@@ -82,10 +82,13 @@ void QResArscEditor::refreshResTableType(const TTablePackage& _tablePackage, qui
 		QSharedPointer<ResTable_entry> t_ptrEntry = t_type.entryValue[i];
 		if (t_ptrEntry.isNull())
 			continue;
+		QVariant t_vEntry;
+		t_vEntry.setValue(t_ptrEntry);
 		if ((*t_ptrEntry).size == sizeof(ResTable_entry))
 		{
 			TTableValueEntry* t_pValueEntry = reinterpret_cast<TTableValueEntry*>(t_ptrEntry.get());
 			QTreeWidgetItem* t_valueItem = new QTreeWidgetItem(m_TW_value);
+			t_valueItem->setData(0, eValueItemRole_entry, t_vEntry);
 			widgetItemSetData(t_valueItem, eValueItemType_value, t_pValueEntry->value.data,
 				(uint32_t)t_pValueEntry->value.dataType, i, QString("0x7f%1%2").arg(_typeid, 2, 16, QChar('0')).arg(i, 4, 16, QChar('0')));
 			t_valueItem->setText(1, _tablePackage.getKeyString(t_pValueEntry->key.index));
@@ -100,6 +103,7 @@ void QResArscEditor::refreshResTableType(const TTablePackage& _tablePackage, qui
 		{
 			TTableMapEntry* t_pMapValue = reinterpret_cast<TTableMapEntry*>(t_ptrEntry.get());
 			QTreeWidgetItem* t_mapItem = new QTreeWidgetItem(m_TW_value);
+			t_mapItem->setData(0, eValueItemRole_entry, t_vEntry);
 			widgetItemSetData(t_mapItem, eValueItemType_array, t_pMapValue->key.index,
 				(uint32_t)Res_value::_DataType::TYPE_NULL, i, QString("0x7f%1%2").arg(_typeid, 2, 16, QChar('0')).arg(i, 4, 16, QChar('0')));
 			t_mapItem->setText(1, _tablePackage.getKeyString(t_pMapValue->key.index));
@@ -118,6 +122,39 @@ void QResArscEditor::refreshResTableType(const TTablePackage& _tablePackage, qui
 				if (t_tableMap.value.dataType == Res_value::_DataType::TYPE_STRING)
 					t_toolTip += "(refCount:" + QString::number(m_Parser->getReferenceCount(t_tableMap.value.data)) + ")";
 				t_valueItem->setToolTip(2, t_toolTip);
+			}
+		}
+	}
+}
+void QResArscEditor::refreshAllValueDataTooltip(void)
+{
+	for (int i = 0; i < m_TW_value->topLevelItemCount(); ++i)
+	{
+		QTreeWidgetItem* t_entryItem = m_TW_value->topLevelItem(i);
+		if (t_entryItem->data(0, eValueItemRole_type).toUInt() == eValueItemType_value)
+		{
+			TTableValueEntry* t_pValueEntry = reinterpret_cast<TTableValueEntry*>(t_entryItem->data(0, eValueItemRole_entry).value<QSharedPointer<ResTable_entry>>().get());
+			if (t_pValueEntry->value.dataType == Res_value::_DataType::TYPE_STRING)
+			{
+				t_entryItem->setData(0, eValueItemRole_data, t_pValueEntry->value.data);
+				t_entryItem->setToolTip(2, QString("0x%1(refCount:%2)").arg(t_pValueEntry->value.data, 8, 16, QChar('0')).
+					arg(QString::number(m_Parser->getReferenceCount(t_pValueEntry->value.data))));
+			}
+		}
+		else
+		{
+			TTableMapEntry* t_pMapValue = reinterpret_cast<TTableMapEntry*>(t_entryItem->data(0, eValueItemRole_entry).value<QSharedPointer<ResTable_entry>>().get());
+			Q_ASSERT(t_pMapValue->count == t_entryItem->childCount());
+			for (quint32 j = 0; j < t_pMapValue->count; ++j)
+			{
+				ResTable_map& t_tableMap = t_pMapValue->tablemap[j];
+				QTreeWidgetItem* t_mapValueItem = t_entryItem->child(j);
+				if (t_tableMap.value.dataType == Res_value::_DataType::TYPE_STRING)
+				{
+					t_mapValueItem->setData(0, eValueItemRole_data, t_tableMap.value.data);
+					t_mapValueItem->setToolTip(2, QString("0x%1(refCount:%2)").arg(t_tableMap.value.data, 8, 16, QChar('0')).
+						arg(QString::number(m_Parser->getReferenceCount(t_tableMap.value.data))));
+				}
 			}
 		}
 	}
@@ -370,8 +407,10 @@ void QResArscEditor::onEditValueTriggered_slot(void)
 		else
 			t_newValue = m_Parser->setValue(t_tablePackage, t_typeid, t_specid, t_item->data(0, eValueItemRole_id).toUInt(), t_newType, t_value);
 	}
-	t_item->setData(0, eValueItemRole_datatype, (uint32_t)t_newValue->dataType);
 	t_item->setText(2, t_tablePackage.resValue2String(*t_newValue));
+	//如果改的是字符串，则需要重新刷新当前页的字符串的data和tooltip，因为插入删除字符串后，这两个的数据都有可能改变
+	if (t_dataType == (uint32_t)Res_value::_DataType::TYPE_STRING || t_newType == Res_value::_DataType::TYPE_STRING)
+		refreshAllValueDataTooltip();
 }
 void QResArscEditor::onAddLocaleTriggered_slot(void)
 {
@@ -561,7 +600,7 @@ void QResArscEditor::onImportLocaleTriggered_slot(void)
 		{
 			TTableMapEntry* t_pMapValue = reinterpret_cast<TTableMapEntry*>(t_ptrEntry.get());
 			QString t_name = t_tablePackage.getKeyString(t_pMapValue->key.index);
-			if (!t_arrayMap.contains(t_name))// || t_arrayMap[t_name].size() != t_pMapValue->tablemap.size())
+			if (!t_arrayMap.contains(t_name))
 				continue;
 			const QMap<uint32_t, TValue>& t_values = t_arrayMap[t_name];
 			for (int j = 0; j < t_pMapValue->tablemap.size(); ++j)

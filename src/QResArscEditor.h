@@ -26,6 +26,7 @@ enum EValueItemType
 enum EValueItemRole
 {
 	eValueItemRole_type = Qt::UserRole,		//是什么节点，数据，数组还是数组元素
+	eValueItemRole_entry,
 	eValueItemRole_data,
 	eValueItemRole_datatype,
 	eValueItemRole_id,
@@ -45,7 +46,7 @@ private:
 	void onRefreshTablePackage(const QString& _name, const TTablePackage& _package);
 	void onRefreshTablePackageData(const QString& _packageName, ETreeItemType _type, uint32_t _id1, uint32_t _id2, const QString& _name);
 	void refreshResTableType(const TTablePackage& _tablePackage, quint32 _typeid, quint32 _specid);
-
+	void refreshAllValueDataTooltip(void);
 	void onOpenReleased_Slot(void);
 	void onSaveReleased_Slot(void);
 	void onTreeCurrentItemChanged_slot(QTreeWidgetItem* _current, QTreeWidgetItem* _previous);

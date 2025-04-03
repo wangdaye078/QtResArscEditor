@@ -529,6 +529,7 @@ struct TTableTypeEx :public ResTable_type
 		return *this;
 	}
 };
+Q_DECLARE_METATYPE(QSharedPointer<ResTable_entry>)
 
 struct TRichString
 {
