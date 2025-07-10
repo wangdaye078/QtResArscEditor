@@ -21,61 +21,126 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
-    <Filter Include="utf8">
-      <UniqueIdentifier>{ae6f8a82-e3a0-43da-85b2-20bf4236eee2}</UniqueIdentifier>
+    <Filter Include="common">
+      <UniqueIdentifier>{5303893d-8e97-4363-a37e-c1c1ec20fbf8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="QResArscEditorUI.qrc">
+    <QtRcc Include="QtResArscEditorUI.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\GuidFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\QResArscParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\QResArscEditorUI.cpp">
+    <ClCompile Include="src\QTablePackage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResArscStruct.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\QResArscEditor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SimpleRichText.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\QEditDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\QAppendDialog.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\QPublicFinal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\QStringPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QResArscEditorUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QResArscEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QArscString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common\QUtf8.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common\utf8.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QTableType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResArscStruct.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QTreeWidgetItem_ArscValue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SimpleRichText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QAppendDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\QAddLocaleDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\StringPoolExtend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\QUtf8.cpp">
-      <Filter>utf8</Filter>
-    </ClCompile>
-    <ClCompile Include="src\utf8.cpp">
-      <Filter>utf8</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TablePackageExtend.cpp">
+    <ClCompile Include="src\QEditDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\GuidFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QStringPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ResArscStruct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QArscString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\basicDefine.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\QUtf8.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\sbtree.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\sbtree_map.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\utf8.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\bpptree.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\bpptree_map.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QTreeWidgetItem_ArscValue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SimpleRichText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\shared_ptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QTableType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QTablePackage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <QtMoc Include="src\QResArscParser.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\QPublicFinal.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\QResArscEditorUI.h">
@@ -84,41 +149,30 @@
     <QtMoc Include="src\QResArscEditor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="src\QEditDialog.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="src\QAppendDialog.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="src\QPublicFinal.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\QAddLocaleDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\QEditDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\ResArscStruct.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\basicDefine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SimpleRichText.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\StringPoolExtend.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\utf8.h">
-      <Filter>utf8</Filter>
-    </ClInclude>
-    <ClInclude Include="src\QUtf8.h">
-      <Filter>utf8</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TablePackageExtend.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <QtUic Include="QResArscEditorUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\common\sbtree.natvis">
+      <Filter>common</Filter>
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="QtResArscEditor.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QtResArscEditor.rc">

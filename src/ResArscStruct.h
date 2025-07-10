@@ -1,13 +1,12 @@
 //********************************************************************
-//	filename: 	F:\mygit\QtResArscEditor\src\ResArscStruct.h
+//	filename: 	F:\mygit\QtResArscEditor2\src\ResArscStruct.h
 //	desc:		
 //
-//	created:	wangdaye 14:3:2025   20:54
+//	created:	wangdaye 22:6:2025   12:18
 //********************************************************************
 #ifndef ResArscStruct_h__
 #define ResArscStruct_h__
-#include <QSharedPointer>
-#include <QMap>
+#include <QString>
 #pragma pack(push, 1)
 
 enum class RES_TYPE : uint16_t
@@ -40,6 +39,7 @@ struct ResChunk_header
 	uint16_t headerSize;	//<comment = "Size of the chunk header (in bytes)">;
 	uint32_t size;			//<comment = "Total size of this chunk (in bytes)">;
 };
+
 struct ResTable_header
 {
 	ResChunk_header header;
@@ -60,16 +60,13 @@ struct ResStringPool_header
 	uint32_t stringsStart;	// <comment = "Index from header of the string data">;
 	uint32_t stylesStart;	// <comment = "Index from header of the style data">;
 };
+
 struct ResStringPool_ref
 {
 	enum {
 		END = 0xFFFFFFFF
 	};
 	uint32_t index;		// <comment = "Index into the string pool table">;
-	bool operator<(const ResStringPool_ref& _other) const
-	{
-		return index < _other.index;
-	}
 };
 
 struct ResStringPool_span
@@ -80,32 +77,6 @@ struct ResStringPool_span
 	ResStringPool_ref name;			//<comment = "This is the name of the span">;
 	uint32_t firstChar;			//<comment = "The range of characters in the string that this span applies to">;
 	uint32_t lastChar;
-	bool operator<(const ResStringPool_span& _other) const
-	{
-		if (name.index < _other.name.index)
-			return true;
-		if (name.index > _other.name.index)
-			return false;
-		if (firstChar < _other.firstChar)
-			return true;
-		if (firstChar > _other.firstChar)
-			return false;
-		if (lastChar < _other.lastChar)
-			return true;
-		if (lastChar > _other.lastChar)
-			return false;
-		return false;	//相等
-	}
-	bool operator == (const ResStringPool_span& _other) const
-	{
-		if (name.index != _other.name.index)
-			return false;
-		if (firstChar != _other.firstChar)
-			return false;
-		if (lastChar != _other.lastChar)
-			return false;
-		return true;
-	}
 };
 
 struct ResTable_package
@@ -334,31 +305,7 @@ struct ResTable_config
 	char localeNumberingSystem[8];
 	bool operator == (const ResTable_config& _other) const
 	{
-		if (imsi != _other.imsi)
-			return false;
-		if (locale != _other.locale)
-			return false;
-		if (screenType != _other.screenType)
-			return false;
-		if (inputInfo != _other.inputInfo)
-			return false;
-		if (screenSize != _other.screenSize)
-			return false;
-		if (version != _other.version)
-			return false;
-		if (screenConfig != _other.screenConfig)
-			return false;
-		if (screenSizeDp != _other.screenSizeDp)
-			return false;
-		if (*reinterpret_cast<const uint32_t*>(localeScript) != *reinterpret_cast<const uint32_t*>(_other.localeScript))
-			return false;
-		if (*reinterpret_cast<const uint32_t*>(localeVariant) != *reinterpret_cast<const uint32_t*>(_other.localeVariant))
-			return false;
-		if (screenConfig2 != _other.screenConfig2)
-			return false;
-		if (*reinterpret_cast<const uint32_t*>(localeNumberingSystem) != *reinterpret_cast<const uint32_t*>(_other.localeNumberingSystem))
-			return false;
-		return true;
+		return memcmp(this, &_other, sizeof(*this)) == 0;
 	}
 	ResTable_config()
 	{
@@ -394,6 +341,7 @@ struct ResTable_entry
 	uint16_t flags;
 	ResStringPool_ref key;
 };
+
 struct Res_value
 {
 	uint16_t size;		//<comment = "Number of bytes in this structure">;
@@ -450,106 +398,25 @@ struct Res_value
 	};
 	_DataType dataType;
 	uint32_t data;
-};
-struct ResTable_ref
-{
-	uint32_t indent;
-	bool operator<(const ResTable_ref& _other) const
-	{
-		return indent < _other.indent;
-	}
+	Res_value() :size(sizeof(Res_value)), res0(0), dataType(_DataType::TYPE_NULL), data(0) {}
 };
 
-struct TTableValueEntry : public ResTable_entry
+struct ResTable_ref
 {
-	Res_value value;
+	uint32_t ident;
+	bool operator<(const ResTable_ref& _other) const
+	{
+		return ident < _other.ident;
+	}
 };
+//数组的头使用ResTable_map_entry结构，普通的头使用ResTable_entry结构，前2个字节都代表size，所以可以根本size的值判断这到底是什么结构
 struct ResTable_map_entry : public ResTable_entry
 {
 	ResTable_ref parent;
 	uint32_t count;
 };
-struct ResTable_map
-{
-	ResTable_ref name;
-	Res_value value;
-};
+
 #pragma pack(pop)
-
-struct TStringPoolSpans :public QVector<ResStringPool_span>
-{
-	//QVector<ResStringPool_span> spans;
-	bool operator == (const TStringPoolSpans& _other) const
-	{
-		//return spans == _other.spans;		//应该不是我的问题，是C++标准的变化，导致这个会编译错误。
-		return std::equal(this->cbegin(), this->cend(), _other.cbegin(), _other.cend());
-	}
-	void moveSpan(uint32_t _beginIdx, int _step)
-	{
-		for (int i = 0; i < size(); ++i)
-		{
-			if ((*this)[i].name.index > _beginIdx)
-				(*this)[i].name.index += _step;
-		}
-	}
-};
-
-struct TTableTypeSpecEx :public ResTable_typeSpec
-{
-	QVector<uint32_t> configmask;	//对应每一条具体数据，如果值是4的话，代表可以做翻译本地化	ACONFIGURATION
-	TTableTypeSpecEx& operator=(const ResTable_typeSpec& _other)
-	{
-		*reinterpret_cast<ResTable_typeSpec*>(this) = _other;
-		return *this;
-	}
-};
-struct TTableMapEntry :public ResTable_map_entry
-{
-	QVector<ResTable_map> tablemap;
-	TTableMapEntry& operator=(const ResTable_map_entry& _other)
-	{
-		*reinterpret_cast<ResTable_map_entry*>(this) = _other;
-		return *this;
-	}
-};
-
-struct TTableTypeEx :public ResTable_type
-{
-	QVector<QSharedPointer<ResTable_entry>> entryValue;
-	template<typename T>
-	T* createEntry(uint _idx)
-	{
-		QSharedPointer<ResTable_entry> t_p = QSharedPointer<ResTable_entry>(new T());
-		entryValue[_idx] = t_p;
-		return reinterpret_cast<T*>(t_p.data());
-	}
-	TTableTypeEx& operator=(const ResTable_type& _other)
-	{
-		*reinterpret_cast<ResTable_type*>(this) = _other;
-		return *this;
-	}
-};
-Q_DECLARE_METATYPE(QSharedPointer<ResTable_entry>)
-
-struct TRichString
-{
-	QString str;
-	TStringPoolSpans spans;
-	bool operator<(const TRichString& _other) const
-	{
-		if (str < _other.str)
-			return true;
-		if (str > _other.str)
-			return false;
-		if (spans < _other.spans)
-			return true;
-		if (spans > _other.spans)
-			return false;
-		return false;	//相等
-	}
-	TRichString() {};
-	TRichString(const QString& _str, const TStringPoolSpans& _span) :str(_str), spans(_span) {};
-};
 
 extern const char* DIMENSION_UNIT_STRS[8];
 extern const char* FRACTION_UNIT_STRS[2];
@@ -568,7 +435,6 @@ extern const char* SCREENLAYOUT_ROUND_VALUES[4];
 extern const char* TOUCHSCREEN_VALUES[4];
 extern const char* UI_MODE_NIGHT_VALUES[3];
 extern const char* UI_MODE_TYPE_VALUES[16];
-
 
 extern void initTableConfig(void);
 extern QString tableConfig2String(const QString& _prefix, const ResTable_config& _tableConfig);

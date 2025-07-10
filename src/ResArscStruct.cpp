@@ -1,5 +1,6 @@
 #include "ResArscStruct.h"
-#include "basicDefine.h"
+#include "common/basicDefine.h"
+#include <QMap>
 const char* DIMENSION_UNIT_STRS[8] = { "px", "dip", "sp", "pt", "in", "mm", "", "" };
 const char* FRACTION_UNIT_STRS[2] = { "%", "%p" };
 float MANTISSA_MULT = 1.0f / (1 << 8);

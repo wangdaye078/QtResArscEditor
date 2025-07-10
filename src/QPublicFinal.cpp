@@ -1,6 +1,8 @@
 #include "QPublicFinal.h"
 #include <QDomDocument>
 #include <QFile>
+QPublicFinal* g_publicFinal;
+
 QPublicFinal::QPublicFinal(QObject* parent)
 	: QObject(parent)
 {
@@ -9,11 +11,13 @@ QPublicFinal::QPublicFinal(QObject* parent)
 QPublicFinal::~QPublicFinal()
 {
 }
-QString QPublicFinal::getDataName(uint32_t _data)
+PArscRichString QPublicFinal::getDataName(uint32_t _data)
 {
 	if (m_finalMap.contains(_data))
 		return m_finalMap[_data];
-	return "unknow";
+	PArscRichString t_str(new TArscRichString());
+	t_str->string = "unknow";
+	return t_str;
 }
 void QPublicFinal::initFinalData(void)
 {
@@ -32,7 +36,8 @@ void QPublicFinal::initFinalData(void)
 	QDomElement t_publicDom = t_root.firstChildElement("public");
 	while (!t_publicDom.isNull())
 	{
-		QString t_str = "@android:" + t_publicDom.attribute("type") + "/" + t_publicDom.attribute("name");
+		PArscRichString t_str(new TArscRichString());
+		t_str->string = "@android:" + t_publicDom.attribute("type") + "/" + t_publicDom.attribute("name");
 		QString t_sid = t_publicDom.attribute("id");
 		uint32_t t_id = 0;
 		if (t_sid[0] == 0x30 && (t_sid[1] == 0x58 || t_sid[1] == 0x78))

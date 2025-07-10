@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5965181F-7D91-4333-BA99-7E3124F1D577}</ProjectGuid>
+    <ProjectGuid>{D399DED1-EC1C-41F0-9847-AD1C6B7B6E68}</ProjectGuid>
     <Keyword>QtVS_v304</Keyword>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0</WindowsTargetPlatformVersion>
@@ -60,18 +60,23 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <Version>2.0</Version>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -102,39 +107,61 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\common\QUtf8.cpp" />
+    <ClCompile Include="src\common\utf8.cpp" />
+    <ClCompile Include="src\GuidFactory.cpp" />
     <ClCompile Include="src\QAddLocaleDialog.cpp" />
     <ClCompile Include="src\QAppendDialog.cpp" />
+    <ClCompile Include="src\QArscString.cpp" />
     <ClCompile Include="src\QEditDialog.cpp" />
     <ClCompile Include="src\QPublicFinal.cpp" />
     <ClCompile Include="src\QResArscEditor.cpp" />
     <ClCompile Include="src\QResArscEditorUI.cpp" />
     <ClCompile Include="src\QResArscParser.cpp" />
-    <ClCompile Include="src\QUtf8.cpp" />
+    <ClCompile Include="src\QStringPool.cpp" />
+    <ClCompile Include="src\QTablePackage.cpp" />
+    <ClCompile Include="src\QTableType.cpp" />
+    <ClCompile Include="src\QTreeWidgetItem_ArscValue.cpp" />
     <ClCompile Include="src\ResArscStruct.cpp" />
-    <ClCompile Include="src\StringPoolExtend.cpp" />
     <ClCompile Include="src\SimpleRichText.cpp" />
-    <ClCompile Include="src\TablePackageExtend.cpp" />
-    <ClCompile Include="src\utf8.cpp" />
-    <QtRcc Include="QResArscEditorUI.qrc" />
+    <QtRcc Include="QtResArscEditorUI.qrc" />
+    <QtUic Include="QResArscEditorUI.ui" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\QResArscParser.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="src\QEditDialog.h" />
+    <ClInclude Include="src\QTablePackage.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\common\basicDefine.h" />
+    <ClInclude Include="src\common\bpptree.h" />
+    <ClInclude Include="src\common\bpptree_map.h" />
+    <ClInclude Include="src\common\QUtf8.h" />
+    <ClInclude Include="src\common\sbtree.h" />
+    <ClInclude Include="src\common\sbtree_map.h" />
+    <ClInclude Include="src\common\shared_ptr.h" />
+    <ClInclude Include="src\common\utf8.h" />
+    <ClInclude Include="src\GuidFactory.h" />
     <QtMoc Include="src\QAppendDialog.h" />
-    <QtMoc Include="src\QPublicFinal.h" />
     <QtMoc Include="src\QAddLocaleDialog.h" />
-    <ClInclude Include="src\QUtf8.h" />
-    <ClInclude Include="src\StringPoolExtend.h" />
+    <QtMoc Include="src\QEditDialog.h" />
     <ClInclude Include="src\SimpleRichText.h" />
-    <ClInclude Include="src\TablePackageExtend.h" />
-    <ClInclude Include="src\utf8.h" />
     <QtMoc Include="src\QResArscEditorUI.h" />
     <QtMoc Include="src\QResArscEditor.h" />
-    <ClInclude Include="src\basicDefine.h" />
+    <ClInclude Include="src\QArscString.h" />
+    <ClInclude Include="src\QStringPool.h" />
+    <ClInclude Include="src\QTableType.h" />
+    <ClInclude Include="src\QTreeWidgetItem_ArscValue.h" />
     <ClInclude Include="src\ResArscStruct.h" />
+    <QtMoc Include="src\QPublicFinal.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\common\sbtree.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="QtResArscEditor.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QtResArscEditor.rc" />

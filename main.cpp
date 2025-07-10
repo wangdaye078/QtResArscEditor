@@ -1,13 +1,13 @@
-#include <QtWidgets/QApplication>
 #include "src/QResArscEditor.h"
-#include "src/ResArscStruct.h"
-#include "src/SimpleRichText.h"
+#include <QtWidgets/QApplication>
+#include <map>
+#include <QDebug>
+#include <set>
 
 int main(int argc, char* argv[])
 {
-	QApplication a(argc, argv);
-	initTableConfig();
-	QResArscEditor w;
-	w.show();
-	return a.exec();
+	QApplication app(argc, argv);
+	QResArscEditor window;
+	window.show();
+	return app.exec();
 }

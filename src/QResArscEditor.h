@@ -1,39 +1,26 @@
 //********************************************************************
-//	filename: 	F:\mygit\QtResArscEditor\src\QResArscEditor.h
+//	filename: 	F:\mygit\QtResArscEditor2\QResArscEditor.h
 //	desc:		
 //
-//	created:	wangdaye 16:3:2025   11:38
+//	created:	wangdaye 22:6:2025   12:46
 //********************************************************************
 #ifndef QResArscEditor_h__
 #define QResArscEditor_h__
 #include "QResArscEditorUI.h"
-#include "TablePackageExtend.h"
+#include "QTablePackage.h"
 
 class QResArscParser;
+class QMenu;
+
 enum ETreeItemRole
 {
 	eTreeItemRole_type = Qt::UserRole,
 	eTreeItemRole_package,
 	eTreeItemRole_typeid,
-	eTreeItemRole_specid,
-};
-enum EValueItemType
-{
-	eValueItemType_array,
-	eValueItemType_arrayitem,
-	eValueItemType_value
-};
-enum EValueItemRole
-{
-	eValueItemRole_type = Qt::UserRole,		//是什么节点，数据，数组还是数组元素
-	eValueItemRole_entry,
-	eValueItemRole_data,
-	eValueItemRole_datatype,
-	eValueItemRole_id,
-	eValueItemRole_parentid,
+	eTreeItemRole_value,
 };
 
-class QMenu;
+
 class QResArscEditor : public QResArscEditorUI
 {
 	Q_OBJECT
@@ -42,11 +29,6 @@ public:
 	QResArscEditor(QWidget* _parent = nullptr);
 	~QResArscEditor();
 private:
-	void refreshArscTree();
-	void onRefreshTablePackage(const QString& _name, const TTablePackage& _package);
-	void onRefreshTablePackageData(const QString& _packageName, ETreeItemType _type, uint32_t _id1, uint32_t _id2, const QString& _name);
-	void refreshResTableType(const TTablePackage& _tablePackage, quint32 _typeid, quint32 _specid);
-	void refreshAllValueDataTooltip(void);
 	void onOpenReleased_Slot(void);
 	void onSaveReleased_Slot(void);
 	void onTreeCurrentItemChanged_slot(QTreeWidgetItem* _current, QTreeWidgetItem* _previous);
@@ -59,11 +41,16 @@ private:
 	void onAddLocaleTriggered_slot(void);
 	void onExportLocaleTriggered_slot(void);
 	void onImportLocaleTriggered_slot(void);
+	void onPrintPublicStringsTriggered_slot(void);
 private:
-	QResArscParser* m_Parser;
+	void onRefreshTablePackage(const QString& _packageName, const PTablePackage& _package);
+	void onRefreshTablePackageData(const QString& _packageName, ETreeItemType _type, uint32_t _typeId, const QString& _name, const QVariant& _v);
+	QTreeWidgetItem* onRefreshSpecificData(const PTablePackage& _package, uint32_t _typeId, QTreeWidgetItem* _parent, uint32_t _idx, EValueItemType _type, const QVariant& _v);
+private:
+	QResArscParser* m_parser;
 	QMenu* m_valueMenu;
 	QMenu* m_treeMenu;
-	QString m_BasePath;
+	QString m_basePath;
 };
 
 #endif // QResArscEditor_h__

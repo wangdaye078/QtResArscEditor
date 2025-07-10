@@ -109,7 +109,7 @@ size_t u8decode(char const* str, ucs4_t* des, size_t n, size_t* illegal)
 	ucs4_t uc = 0;
 	size_t r_illegal_all = 0, r_illegal;
 
-	while ((uc = getu8c(&s, &r_illegal)))
+	while ((uc = getu8c(&s, &r_illegal)) != 0)
 	{
 		if (i < (n - 1))
 		{
@@ -135,10 +135,9 @@ size_t u8decodelen(char const* str)
 {
 	char* s = (char*)str;
 	size_t i = 0;
-	ucs4_t uc = 0;
 	size_t r_illegal;
 
-	while ((uc = getu8c(&s, &r_illegal)))
+	while (getu8c(&s, &r_illegal) != 0)
 	{
 		i++;
 	}

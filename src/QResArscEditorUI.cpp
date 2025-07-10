@@ -1,4 +1,5 @@
 #include "QResArscEditorUI.h"
+#include <QCoreApplication>
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -28,7 +29,7 @@ QResArscEditorUI::~QResArscEditorUI()
 }
 void QResArscEditorUI::RetranslateUi(void)
 {
-	setWindowTitle(tr("QResArscEditor"));
+	setWindowTitle(tr("QResArscEditor ") + QCoreApplication::applicationVersion());
 	m_LB_filePath->setText(tr("filePath:"));
 
 	QTreeWidgetItem* t_treeWidgetItem = m_TW_value->headerItem();
@@ -44,6 +45,7 @@ void QResArscEditorUI::RetranslateUi(void)
 	m_AC_AddLocale->setText(tr("AddLocale"));
 	m_AC_ExportLocale->setText(tr("ExportLocale"));
 	m_AC_ImportLocale->setText(tr("ImportLocale"));
+	m_AC_PrintPublicStrings->setText(tr("PrintPublicStrings"));
 
 	m_editDialog->RetranslateUi();
 	m_appendDialog->RetranslateUi();
@@ -128,6 +130,8 @@ void QResArscEditorUI::CreateControl(void)
 	m_AC_ExportLocale->setObjectName(QString::fromUtf8("m_AC_ExportLocale"));
 	m_AC_ImportLocale = new QAction(this);
 	m_AC_ImportLocale->setObjectName(QString::fromUtf8("m_AC_ImportLocale"));
+	m_AC_PrintPublicStrings = new QAction(this);
+	m_AC_PrintPublicStrings->setObjectName(QString::fromUtf8("m_AC_PrintPublicStrings"));
 	//------------------------------------------------
 	connect(m_TB_open, SIGNAL(released()), this, SLOT(onOpenReleased_Slot()));
 	connect(m_TB_save, SIGNAL(released()), this, SLOT(onSaveReleased_Slot()));
@@ -142,6 +146,7 @@ void QResArscEditorUI::CreateControl(void)
 	connect(m_AC_AddLocale, SIGNAL(triggered()), this, SLOT(onAddLocaleTriggered_slot()));
 	connect(m_AC_ExportLocale, SIGNAL(triggered()), this, SLOT(onExportLocaleTriggered_slot()));
 	connect(m_AC_ImportLocale, SIGNAL(triggered()), this, SLOT(onImportLocaleTriggered_slot()));
+	connect(m_AC_PrintPublicStrings, SIGNAL(triggered()), this, SLOT(onPrintPublicStringsTriggered_slot()));
 }
 void QResArscEditorUI::onExpandAllTriggered_slot(void)
 {

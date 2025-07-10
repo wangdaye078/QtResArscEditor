@@ -20,7 +20,7 @@ class QPlainTextEdit;
 class QTextBrowser;
 class QCheckBox;
 class QResArscParser;
-class TTablePackage;
+class QTablePackage;
 
 class QEditDialog : public QDialog
 {
@@ -30,8 +30,8 @@ public:
 	QEditDialog(QWidget* _parent = nullptr);
 	~QEditDialog();
 	void RetranslateUi(void);
-	void setTablePackage(TTablePackage* _package);
-	void setData(const ResTable_config& _config, uint32_t _type, uint32_t _data);
+	void setTablePackage(QTablePackage* _package);
+	void setData(const ResTable_config& _config, uint32_t _type, uint32_t _data, const QString& _sdata);
 	uint32_t getType(void) const;
 	uint32_t getData(void) const;
 	QString getSData(void) const;
@@ -68,10 +68,11 @@ public:
 	QTextEdit* m_TE_Reference;
 	//----------------------
 	QMap<uint32_t, int> m_Type2Page;
-	TTablePackage* m_tablePackage;
+	QTablePackage* m_tablePackage;
 	ResTable_config m_config;
 	uint32_t m_type;
 	uint32_t m_data;
+	QString m_sdata;
 };
 
 #endif // QEditDialog_h__

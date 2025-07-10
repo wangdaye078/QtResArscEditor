@@ -64,6 +64,7 @@ private slots:
 	virtual void onAddLocaleTriggered_slot(void) = 0;
 	virtual void onExportLocaleTriggered_slot(void) = 0;
 	virtual void onImportLocaleTriggered_slot(void) = 0;
+	virtual void onPrintPublicStringsTriggered_slot(void) = 0;
 	void onExpandAllTriggered_slot(void);
 protected:
 	QLabel* m_LB_filePath;
@@ -85,6 +86,7 @@ protected:
 	QAction* m_AC_AddLocale;
 	QAction* m_AC_ExportLocale;
 	QAction* m_AC_ImportLocale;
+	QAction* m_AC_PrintPublicStrings;
 };
 
 #endif // QResArscEditorUI_h__

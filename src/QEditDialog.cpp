@@ -61,6 +61,7 @@ void QEditDialog::CreateControl(void)
 
 	m_LE_Name = new QLineEdit(this);
 	m_LE_Name->setObjectName(QString::fromUtf8("m_LE_Name"));
+	m_LE_Name->setReadOnly(true);
 
 	t_mainLayout->addWidget(m_LE_Name, 1, 1, 1, 1);
 
@@ -241,13 +242,13 @@ void QEditDialog::CreateControl(void)
 	m_CB_Boolen->addItem("true", 1);
 	//--------------------------------------------------------
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_REFERENCE, 5);
-	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_ATTRIBUTE, 3);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_ATTRIBUTE, 5);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_STRING, 0);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_FLOAT, 2);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DIMENSION, 2);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_FRACTION, 2);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DYNAMIC_REFERENCE, 5);
-	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE, 3);
+	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE, 5);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_DEC, 2);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_HEX, 3);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_BOOLEAN, 4);
@@ -256,15 +257,16 @@ void QEditDialog::CreateControl(void)
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_ARGB4, 1);
 	m_Type2Page.insert((uint32_t)Res_value::_DataType::TYPE_INT_COLOR_RGB4, 1);
 }
-void QEditDialog::setTablePackage(TTablePackage* _package)
+void QEditDialog::setTablePackage(QTablePackage* _package)
 {
 	m_tablePackage = _package;
 }
-void QEditDialog::setData(const ResTable_config& _config, uint32_t _type, uint32_t _data)
+void QEditDialog::setData(const ResTable_config& _config, uint32_t _type, uint32_t _data, const QString& _sdata)
 {
 	m_config = _config;
 	m_type = _type;
 	m_data = _data;
+	m_sdata = _sdata;
 	int t_newIdx = m_CB_Type->findData(_type);
 	if (t_newIdx == m_CB_Type->currentIndex())
 		onTypeCurrentIndexChanged_slot(t_newIdx);
@@ -290,23 +292,23 @@ void QEditDialog::onStackedCurrentChanged_slot(int _index)
 	switch (_index)
 	{
 	case 0:
-		m_TE_String->setPlainText(m_tablePackage->resValue2String(t_value));
+		m_TE_String->setPlainText(m_sdata);
 		m_CB_ShowRichText->setChecked(false);
 		break;
 	case 1:
-		m_LE_Color->setText(m_tablePackage->resValue2String(t_value));
+		m_LE_Color->setText(resValue2String(t_value, PArscRichString()));
 		break;
 	case 2:
-		m_LE_Digital->setText(m_tablePackage->resValue2String(t_value));
+		m_LE_Digital->setText(resValue2String(t_value, PArscRichString()));
 		break;
 	case 3:
-		m_LE_Hex->setText(m_tablePackage->resValue2String(t_value));
+		m_LE_Hex->setText(resValue2String(t_value, PArscRichString()));
 		break;
 	case 4:
 		m_CB_Boolen->setCurrentIndex(m_data == 0 ? 0 : 1);
 		break;
 	case 5:
-		m_LE_Reference->setText(m_tablePackage->resValue2String(t_value));
+		m_LE_Reference->setText(resValue2String(t_value, PArscRichString()));
 		break;
 	}
 }
@@ -341,8 +343,14 @@ void QEditDialog::onReferenceTextChanged_slot(const QString& _text)
 	uint32_t t_data = getHexTextData(_text, &t_ok);
 	if (!t_ok)
 		return;
-
-	m_TE_Reference->setText(m_tablePackage->getReferenceDestination(m_config, t_data));
+	QString t_prefix = "@";
+	bool t_addType = true;
+	if (_text[0] == '?')
+	{
+		t_prefix = "?";
+		t_addType = false;
+	}
+	m_TE_Reference->setText(m_tablePackage->getKeyString(t_prefix, t_addType, t_data));
 }
 void QEditDialog::onShowRichTextStateChanged_slot(int)
 {
@@ -370,7 +378,7 @@ static uint32_t complexToUint2(float _value)
 	{
 		t_value *= G_MULT[++t_multIdx];
 	}
-	return uint32_t(t_value) & 0xFFFFFF00 | (t_multIdx << 4);
+	return (uint32_t(t_value) & 0xFFFFFF00) | (t_multIdx << 4);
 }
 QRegExp g_DFRegExp("^([\\-0-9\\.]+)([%A-Za-z]*)$");
 static uint32_t getDimensionFractionData(float _v, float _divisor, const QString& _e, const char* _suffix[], int _suffixCount)

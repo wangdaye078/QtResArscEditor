@@ -1,13 +1,13 @@
 //********************************************************************
-//	filename: 	F:\mygit\QtResArscEditor\src\SimpleRichText.h
+//	filename: 	F:\mygit\QtResArscEditor2\src\SimpleRichText.h
 //	desc:		
 //
-//	created:	wangdaye 17:3:2025   9:11
+//	created:	wangdaye 1:7:2025   17:03
 //********************************************************************
 #ifndef SimpleRichText_h__
 #define SimpleRichText_h__
 #include <QMap>
-#include "StringPoolExtend.h"
+#include <QString>
 
 //需要修改QMap.h文件，找到friend class QMultiMap<Key, T>，在后面加入friend class QMultiMap_modify<Key, T>;大概有3处
 template <class Key, class T>
@@ -75,5 +75,11 @@ public:
 		}
 	}
 };
+
+
+struct TArscRichString;
+extern QString encodeRichText(const TArscRichString* _input);
+extern TArscRichString* decodeRichText(const QString& _input);
+
 
 #endif // SimpleRichText_h__

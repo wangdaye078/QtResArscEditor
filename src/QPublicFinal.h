@@ -8,7 +8,7 @@
 #define QPublicFinal_h__
 #include <QObject>
 #include <QMap>
-#include "ResArscStruct.h"
+#include "QStringPool.h"
 
 class QPublicFinal : public QObject
 {
@@ -16,10 +16,13 @@ class QPublicFinal : public QObject
 public:
 	QPublicFinal(QObject* parent);
 	~QPublicFinal();
-	QString getDataName(uint32_t _data);
+	PArscRichString getDataName(uint32_t _data);
 private:
 	void initFinalData(void);
 private:
-	QMap<uint32_t, QString> m_finalMap;
+	QMap<uint32_t, PArscRichString> m_finalMap;
 };
+
+extern QPublicFinal* g_publicFinal;
+
 #endif // QPublicFinal_h__

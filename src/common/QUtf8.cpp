@@ -23,7 +23,7 @@ QByteArray QString_to_utf8(const QString& _str)
 
 	int t_needlen2 = (int)u8encodelen(t_ucsBuff2.data()) + 1;
 	QByteArray t_arr(t_needlen2, char('\0'));
-	int t_encodelen = (int)u8encode(t_ucsBuff2.data(), t_arr.data(), t_needlen2, NULL);
+	/*int t_encodelen = (int)*/u8encode(t_ucsBuff2.data(), t_arr.data(), t_needlen2, NULL);
 	t_arr.resize(t_arr.size() - 1);
 	return t_arr;
 }
