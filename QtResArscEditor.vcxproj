@@ -73,6 +73,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <Version>2.0</Version>
@@ -124,8 +125,6 @@
     <ClCompile Include="src\QTreeWidgetItem_ArscValue.cpp" />
     <ClCompile Include="src\ResArscStruct.cpp" />
     <ClCompile Include="src\SimpleRichText.cpp" />
-    <QtRcc Include="QtResArscEditorUI.qrc" />
-    <QtUic Include="QResArscEditorUI.ui" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +164,12 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QtResArscEditor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="QResArscEditorUI.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtTranslation Include="tr\QtResArscEditor_zh_CN.ts" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

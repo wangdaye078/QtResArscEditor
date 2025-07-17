@@ -1,6 +1,6 @@
-#include "QTablePackage.h"
 #include "common/basicDefine.h"
 #include "QPublicFinal.h"
+#include "QTablePackage.h"
 #include "SimpleRichText.h"
 
 QTablePackage::QTablePackage(QObject* _parent)

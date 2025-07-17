@@ -1,10 +1,13 @@
 <RCC>
-  <qresource prefix="/res">
-    <file>res/public-final.xml</file>
-    <file>res/locale.txt</file>
-  </qresource>
-  <qresource prefix="/icon">
-    <file>ico/save.png</file>
-    <file>ico/open.png</file>
-  </qresource>
+    <qresource prefix="/res">
+        <file>res/public-final.xml</file>
+        <file>res/locale.txt</file>
+    </qresource>
+    <qresource prefix="/icon">
+        <file>ico/save.png</file>
+        <file>ico/open.png</file>
+    </qresource>
+    <qresource prefix="/translation">
+        <file>tr/QtResArscEditor_zh_CN.qm</file>
+    </qresource>
 </RCC>

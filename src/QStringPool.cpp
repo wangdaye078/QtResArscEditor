@@ -1,7 +1,7 @@
-#include "QStringPool.h"
-#include <QVector>
-#include <QDebug>
 #include "QArscString.h"
+#include "QStringPool.h"
+#include <QDebug>
+#include <QVector>
 
 bool TArscStringStyle::operator<(const TArscStringStyle& _other) const
 {

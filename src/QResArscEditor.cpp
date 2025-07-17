@@ -1,21 +1,21 @@
 #include "QResArscEditor.h"
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QLineEdit>
-#include <QTreeWidget>
 #include <QComboBox>
-#include <QMenu>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QFileDialog>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMessageBox>
+#include <QTreeWidget>
 #include <QXmlStreamWriter>
 
+#include "common/basicDefine.h"
+#include "QAddLocaleDialog.h"
+#include "QAppendDialog.h"
+#include "QEditDialog.h"
 #include "QResArscParser.h"
 #include "QTreeWidgetItem_ArscValue.h"
-#include "QAppendDialog.h"
-#include "QAddLocaleDialog.h"
-#include "QEditDialog.h"
 #include "SimpleRichText.h"
-#include "common/basicDefine.h"
 QResArscEditor::QResArscEditor(QWidget* _parent)
 	: QResArscEditorUI(_parent), m_valueMenu(NULL), m_treeMenu(NULL), m_basePath(".")
 {
@@ -40,7 +40,7 @@ void QResArscEditor::onOpenReleased_Slot(void)
 }
 void QResArscEditor::onSaveReleased_Slot(void)
 {
-	QString t_FileName = QFileDialog::getSaveFileName(this, tr("Get OutPut ARSC File"), m_basePath,
+	QString t_FileName = QFileDialog::getSaveFileName(this, tr("OutPut ARSC File"), m_basePath,
 		tr("ARSC File (*.arsc)"), NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;

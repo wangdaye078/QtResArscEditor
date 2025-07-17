@@ -1,18 +1,18 @@
 #include "QEditDialog.h"
+#include "QResArscParser.h"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDialogButtonBox>
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QComboBox>
-#include <QTextEdit>
 #include <QPlainTextEdit>
-#include <QTextBrowser>
-#include <QCheckBox>
-#include <QDialogButtonBox>
-#include <QStackedWidget>
-#include <QStackedLayout>
 #include <QRegExp>
 #include <QRgba64>
-#include "QResArscParser.h"
+#include <QStackedLayout>
+#include <QStackedWidget>
+#include <QTextBrowser>
+#include <QTextEdit>
 
 QEditDialog::QEditDialog(QWidget* _parent)
 	: QDialog(_parent)
@@ -81,7 +81,7 @@ void QEditDialog::CreateControl(void)
 
 	t_mainLayout->addWidget(m_LB_Value, 3, 0, 1, 1);
 
-	m_stackedLayout = new QStackedLayout(this);
+	m_stackedLayout = new QStackedLayout();
 	m_stackedLayout->setObjectName(QString::fromUtf8("m_stackedLayout"));
 
 	t_mainLayout->addLayout(m_stackedLayout, 3, 1, 1, 1);
