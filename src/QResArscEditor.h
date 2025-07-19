@@ -31,6 +31,7 @@ public:
 private:
 	void onOpenReleased_Slot(void);
 	void onSaveReleased_Slot(void);
+	void onSaveAsReleased_Slot(void);
 	void onTreeCurrentItemChanged_slot(QTreeWidgetItem* _current, QTreeWidgetItem* _previous);
 	void onShowValueContextMenu_slot(const QPoint& _pos);
 	void onShowTreeContextMenu_slot(const QPoint& _pos);

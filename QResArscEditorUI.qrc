@@ -5,6 +5,7 @@
     </qresource>
     <qresource prefix="/icon">
         <file>ico/save.png</file>
+        <file>ico/saveas.png</file>
         <file>ico/open.png</file>
     </qresource>
     <qresource prefix="/translation">

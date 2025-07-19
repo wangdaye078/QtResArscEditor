@@ -1,17 +1,17 @@
+#include "QAddLocaleDialog.h"
+#include "QAppendDialog.h"
+#include "QEditDialog.h"
 #include "QResArscEditorUI.h"
+#include <QAction>
 #include <QCoreApplication>
 #include <QGridLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
-#include <QToolButton>
 #include <QSplitter>
-#include <QTreeWidget>
 #include <QStyleFactory>
-#include <QHeaderView>
-#include <QAction>
-#include "QEditDialog.h"
-#include "QAppendDialog.h"
-#include "QAddLocaleDialog.h"
+#include <QToolButton>
+#include <QTreeWidget>
 
 QResArscEditorUI::QResArscEditorUI(QWidget* _parent)
 	: QDialog(_parent)
@@ -46,6 +46,10 @@ void QResArscEditorUI::RetranslateUi(void)
 	m_AC_ExportLocale->setText(tr("ExportLocale"));
 	m_AC_ImportLocale->setText(tr("ImportLocale"));
 	m_AC_PrintPublicStrings->setText(tr("PrintPublicStrings"));
+
+	m_TB_open->setToolTip(tr("Open ARSC File"));
+	m_TB_save->setToolTip(tr("Save ARSC File"));
+	m_TB_saveas->setToolTip(tr("Save ARSC File As"));
 
 	m_editDialog->RetranslateUi();
 	m_appendDialog->RetranslateUi();
@@ -84,6 +88,12 @@ void QResArscEditorUI::CreateControl(void)
 
 	t_mainLayout->addWidget(m_TB_save, 0, 3, 1, 1);
 
+	m_TB_saveas = new QToolButton(this);
+	m_TB_saveas->setObjectName(QString::fromUtf8("m_TB_saveas"));
+	m_TB_saveas->setIcon(QIcon(":/icon/ico/saveas.png"));
+
+	t_mainLayout->addWidget(m_TB_saveas, 0, 4, 1, 1);
+
 	QSplitter* t_splitter = new QSplitter(this);
 	t_splitter->setObjectName(QString::fromUtf8("t_splitter"));
 	t_splitter->setOrientation(Qt::Horizontal);
@@ -104,7 +114,7 @@ void QResArscEditorUI::CreateControl(void)
 	m_TW_value->setColumnCount(3);
 	t_splitter->addWidget(m_TW_value);
 
-	t_mainLayout->addWidget(t_splitter, 1, 0, 1, 4);
+	t_mainLayout->addWidget(t_splitter, 1, 0, 1, 5);
 
 	//------------------------------------------------
 	t_splitter->setSizes(QList<int>() << 200 << 500);
@@ -135,6 +145,7 @@ void QResArscEditorUI::CreateControl(void)
 	//------------------------------------------------
 	connect(m_TB_open, SIGNAL(released()), this, SLOT(onOpenReleased_Slot()));
 	connect(m_TB_save, SIGNAL(released()), this, SLOT(onSaveReleased_Slot()));
+	connect(m_TB_saveas, SIGNAL(released()), this, SLOT(onSaveAsReleased_Slot()));
 	connect(m_TW_tree, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(onTreeCurrentItemChanged_slot(QTreeWidgetItem*, QTreeWidgetItem*)));
 	connect(m_TW_value, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onShowValueContextMenu_slot(const QPoint&)));
 	connect(m_TW_tree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onShowTreeContextMenu_slot(const QPoint&)));

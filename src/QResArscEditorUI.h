@@ -6,8 +6,8 @@
 //********************************************************************
 #ifndef QResArscEditorUI_h__
 #define QResArscEditorUI_h__
-#include <QtWidgets/QDialog>
 #include <QItemDelegate>
+#include <QtWidgets/QDialog>
 
 class QLabel;
 class QLineEdit;
@@ -54,6 +54,7 @@ private:
 private slots:
 	virtual void onOpenReleased_Slot(void) = 0;
 	virtual void onSaveReleased_Slot(void) = 0;
+	virtual void onSaveAsReleased_Slot(void) = 0;
 	virtual void onTreeCurrentItemChanged_slot(QTreeWidgetItem* _current, QTreeWidgetItem* _previous) = 0;
 	virtual void onShowValueContextMenu_slot(const QPoint& _pos) = 0;
 	virtual void onShowTreeContextMenu_slot(const QPoint& _pos) = 0;
@@ -71,6 +72,7 @@ protected:
 	QLineEdit* m_LE_filePath;
 	QToolButton* m_TB_open;
 	QToolButton* m_TB_save;
+	QToolButton* m_TB_saveas;
 	QTreeWidget* m_TW_tree;
 	QTreeWidget* m_TW_value;
 	QEditDialog* m_editDialog;

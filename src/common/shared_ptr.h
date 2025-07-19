@@ -40,36 +40,36 @@ namespace SRombauts
 	{
 	public:
 		shared_ptr_count() :
-			pn(NULL)
+			ppn(NULL)
 		{
 		}
 		shared_ptr_count(const shared_ptr_count& count) :
-			pn(count.pn)
+			ppn(count.ppn)
 		{
 		}
 		/// @brief Swap method for the copy-and-swap idiom (copy constructor and swap method)
 		void swap(shared_ptr_count& lhs) noexcept // never throws
 		{
-			std::swap(pn, lhs.pn);
+			std::swap(ppn, lhs.ppn);
 		}
 		/// @brief getter of the underlying reference counter
 		size_t use_count(void) const noexcept // never throws
 		{
 			size_t count = 0;
-			if (NULL != pn)
+			if (NULL != ppn)
 			{
-				count = pn->size();
+				count = ppn->size();
 			}
 			return count;
 		}
 		template<class U>
 		void replace(shared_ptr<U>* _original, shared_ptr<U>* _new)
 		{
-			if (pn != NULL)
+			if (ppn != NULL)
 			{
-				SHARED_ASSERT(pn->find(_original) != pn->end());
-				pn->erase(_original);
-				pn->insert(_new);
+				SHARED_ASSERT(ppn->find(_original) != ppn->end());
+				ppn->erase(_original);
+				ppn->insert(_new);
 			}
 		}
 		/// @brief acquire/share the ownership of the pointer, initializing the reference counter
@@ -78,12 +78,12 @@ namespace SRombauts
 		{
 			if (NULL != p->get())
 			{
-				if (NULL == pn)
+				if (NULL == ppn)
 				{
 					try
 					{
-						pn = new std::set<shared_ptr<T>*>; // may throw std::bad_alloc
-						pn->insert(p);
+						ppn = new std::set<shared_ptr<T>*>; // may throw std::bad_alloc
+						ppn->insert(p);
 					}
 					catch (std::bad_alloc&)
 					{
@@ -93,7 +93,7 @@ namespace SRombauts
 				}
 				else
 				{
-					pn->insert(p);
+					ppn->insert(p);
 				}
 			}
 		}
@@ -101,20 +101,20 @@ namespace SRombauts
 		template<class U>
 		void release(shared_ptr<U>* p) noexcept // never throws
 		{
-			if (NULL != pn)
+			if (NULL != ppn)
 			{
-				pn->erase(p);
-				if (0 == pn->size())
+				ppn->erase(p);
+				if (0 == ppn->size())
 				{
 					delete p->get();
-					delete pn;
+					delete ppn;
 				}
-				pn = NULL;
+				ppn = NULL;
 			}
 		}
 
 	public:
-		std::set<shared_ptr<T>*>* pn; //!< Reference counter
+		std::set<shared_ptr<T>*>* ppn; //!< Reference counter
 	};
 
 	template<class T>
@@ -213,6 +213,8 @@ namespace SRombauts
 		/// @brief Swap method for the copy-and-swap idiom (copy constructor and swap method)
 		void swap(shared_ptr& lhs) noexcept // never throws
 		{
+			if (lhs.pn.ppn == this->pn.ppn)
+				return; // nothing to do, same pointer
 			std::swap(px, lhs.px);
 
 			lhs.pn.replace(&lhs, this);
@@ -235,10 +237,10 @@ namespace SRombauts
 		}
 		std::set<shared_ptr<T>*> use_ref(void)  const noexcept // never throws
 		{
-			if (shared_ptr_base<T>::pn.pn == NULL)
+			if (shared_ptr_base<T>::pn.ppn == NULL)
 				return std::set<shared_ptr<T>*>();
 			else
-				return *shared_ptr_base<T>::pn.pn;
+				return *shared_ptr_base<T>::pn.ppn;
 		}
 		// underlying pointer operations :
 		T& operator*()  const noexcept // never throws

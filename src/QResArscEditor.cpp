@@ -28,7 +28,7 @@ QResArscEditor::~QResArscEditor()
 void QResArscEditor::onOpenReleased_Slot(void)
 {
 	QString t_FileName = QFileDialog::getOpenFileName(this, tr("Open ARSC File"), m_basePath,
-		tr("ARSC File (*.arsc)"), NULL, QFileDialog::DontConfirmOverwrite);
+		tr("ARSC File (*.arsc);;APK File (*.apk)"), NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;
 	m_basePath = QFileInfo(t_FileName).absolutePath();
@@ -40,10 +40,26 @@ void QResArscEditor::onOpenReleased_Slot(void)
 }
 void QResArscEditor::onSaveReleased_Slot(void)
 {
+	if (!m_parser->writeFile(m_LE_filePath->text()))
+		QMessageBox::warning(this, tr("warning"), tr("The specified file cannot be written in !"));
+	else
+		QMessageBox::information(this, tr("information"), tr("File write completed !"));
+}
+void QResArscEditor::onSaveAsReleased_Slot(void)
+{
+	QString t_filter = m_LE_filePath->text().endsWith(".apk", Qt::CaseInsensitive) ? tr("ARSC File (*.arsc);;APK File (*.apk)") : tr("ARSC File (*.arsc)");
+
 	QString t_FileName = QFileDialog::getSaveFileName(this, tr("OutPut ARSC File"), m_basePath,
-		tr("ARSC File (*.arsc)"), NULL, QFileDialog::DontConfirmOverwrite);
+		t_filter, NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;
+
+	if (t_FileName.endsWith(".apk", Qt::CaseInsensitive) && !QFile::copy(m_LE_filePath->text(), t_FileName))
+	{
+		QMessageBox::warning(this, tr("warning"), tr("The specified file cannot be written in !"));
+		return;
+	}
+
 	m_basePath = QFileInfo(t_FileName).absolutePath();
 	m_LE_filePath->setText(t_FileName);
 	if (!m_parser->writeFile(t_FileName))
