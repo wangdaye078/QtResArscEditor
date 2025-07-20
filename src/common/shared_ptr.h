@@ -213,12 +213,13 @@ namespace SRombauts
 		/// @brief Swap method for the copy-and-swap idiom (copy constructor and swap method)
 		void swap(shared_ptr& lhs) noexcept // never throws
 		{
-			if (lhs.pn.ppn == this->pn.ppn)
+			if (lhs.pn.ppn == shared_ptr_base<T>::pn.ppn)
 				return; // nothing to do, same pointer
 			std::swap(px, lhs.px);
 
 			lhs.pn.replace(&lhs, this);
 			shared_ptr_base<T>::pn.replace(this, &lhs);
+
 			shared_ptr_base<T>::pn.swap(lhs.pn);
 		}
 
