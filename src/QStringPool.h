@@ -6,11 +6,11 @@
 //********************************************************************
 #ifndef QStringPool_h__
 #define QStringPool_h__
-#include <QObject>
-#include <QList>
-#include <QMap>
 #include "GuidFactory.h"
 #include "ResArscStruct.h"
+#include <QList>
+#include <QMap>
+#include <QObject>
 //#include "common/bpptree_map.h"
 #include "common/sbtree_map.h"
 struct TArscRichString;
@@ -41,7 +41,19 @@ struct TArscRichString
 //typedef std::map<PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>> ArscRichStringMap;
 // 好像有BUG，会导致智能指针的引用数不正常
 //typedef bpptree_map <PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>> ArscRichStringMap;
-typedef sbtree_multimap <PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>> ArscRichStringMap;
+typedef bool (*ArscRichStringLessThanFunc)(const PArscRichString&, const PArscRichString&);
+struct ArscRichStringLessThanFuncWrapper
+{
+	ArscRichStringLessThanFunc func;
+	ArscRichStringLessThanFuncWrapper(ArscRichStringLessThanFunc _func) : func(_func) {}
+	bool operator()(const PArscRichString& _p1, const PArscRichString& _p2) const
+	{
+		return func(_p1, _p2);
+	}
+};
+typedef sbtree_multimap <PArscRichString, int, ArscRichStringLessThanFuncWrapper> ArscRichStringMap;
+//用仿函数比使用std::function要快很多，
+//typedef sbtree_multimap <PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>> ArscRichStringMap;
 class QStringPool : public QObject
 {
 public:

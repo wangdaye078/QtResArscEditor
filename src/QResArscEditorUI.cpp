@@ -85,12 +85,14 @@ void QResArscEditorUI::CreateControl(void)
 	m_TB_save = new QToolButton(this);
 	m_TB_save->setObjectName(QString::fromUtf8("m_TB_save"));
 	m_TB_save->setIcon(QIcon(":/icon/ico/save.png"));
+	m_TB_save->setEnabled(false);
 
 	t_mainLayout->addWidget(m_TB_save, 0, 3, 1, 1);
 
 	m_TB_saveas = new QToolButton(this);
 	m_TB_saveas->setObjectName(QString::fromUtf8("m_TB_saveas"));
 	m_TB_saveas->setIcon(QIcon(":/icon/ico/saveas.png"));
+	m_TB_saveas->setEnabled(false);
 
 	t_mainLayout->addWidget(m_TB_saveas, 0, 4, 1, 1);
 

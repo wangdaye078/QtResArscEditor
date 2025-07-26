@@ -48,9 +48,18 @@ namespace SRombauts
 		{
 		}
 		/// @brief Swap method for the copy-and-swap idiom (copy constructor and swap method)
-		void swap(shared_ptr_count& lhs) noexcept // never throws
+		template<class U>
+		void swap(shared_ptr<U>* l, shared_ptr<U>* r) noexcept // never throws
 		{
-			std::swap(ppn, lhs.ppn);
+			if (l->pn.ppn != NULL)
+				l->pn.ppn->erase(l);
+			if (r->pn.ppn != NULL)
+				r->pn.ppn->erase(r);
+			std::swap(l->pn.ppn, r->pn.ppn);
+			if (l->pn.ppn != NULL)
+				l->pn.ppn->insert(l);
+			if (r->pn.ppn != NULL)
+				r->pn.ppn->insert(r);
 		}
 		/// @brief getter of the underlying reference counter
 		size_t use_count(void) const noexcept // never throws
@@ -61,16 +70,6 @@ namespace SRombauts
 				count = ppn->size();
 			}
 			return count;
-		}
-		template<class U>
-		void replace(shared_ptr<U>* _original, shared_ptr<U>* _new)
-		{
-			if (ppn != NULL)
-			{
-				SHARED_ASSERT(ppn->find(_original) != ppn->end());
-				ppn->erase(_original);
-				ppn->insert(_new);
-			}
 		}
 		/// @brief acquire/share the ownership of the pointer, initializing the reference counter
 		template<class U>
@@ -120,6 +119,7 @@ namespace SRombauts
 	template<class T>
 	class shared_ptr_base
 	{
+		friend class shared_ptr_count<T>;	// allow shared_ptr_count to access the protected members
 	protected:
 		shared_ptr_base(void) :
 			pn()
@@ -215,12 +215,9 @@ namespace SRombauts
 		{
 			if (lhs.pn.ppn == shared_ptr_base<T>::pn.ppn)
 				return; // nothing to do, same pointer
+
 			std::swap(px, lhs.px);
-
-			lhs.pn.replace(&lhs, this);
-			shared_ptr_base<T>::pn.replace(this, &lhs);
-
-			shared_ptr_base<T>::pn.swap(lhs.pn);
+			shared_ptr_base<T>::pn.swap(this, &lhs);
 		}
 
 		// reference counter operations :

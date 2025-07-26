@@ -36,7 +36,10 @@ bool TArscRichString::operator<(const TArscRichString& _other) const
 QStringPool* g_publicStrPool;
 
 QStringPool::QStringPool(bool _removeUnuse, QObject* _parent)
-	: QObject(_parent), m_removeUnuse(_removeUnuse), m_stringPoolHeader(), m_strings(styleFirstLessThan), m_string_to_guid(strongLessThan)
+	: QObject(_parent), m_removeUnuse(_removeUnuse), m_stringPoolHeader()
+	, m_strings(ArscRichStringLessThanFuncWrapper(&styleFirstLessThan))
+	, m_string_to_guid(ArscRichStringLessThanFuncWrapper(&strongLessThan))
+	//m_strings(styleFirstLessThan), m_string_to_guid(strongLessThan)
 {
 }
 

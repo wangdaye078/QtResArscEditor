@@ -1,21 +1,22 @@
+#include "common/basicDefine.h"
+#include "QAddLocaleDialog.h"
+#include "QAppendDialog.h"
+#include "QEditDialog.h"
 #include "QResArscEditor.h"
+#include "QResArscParser.h"
+#include "QTreeWidgetItem_ArscValue.h"
+#include "SimpleRichText.h"
 #include <QComboBox>
+#include <QDebug>
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
+#include <QToolButton>
 #include <QTreeWidget>
 #include <QXmlStreamWriter>
-
-#include "common/basicDefine.h"
-#include "QAddLocaleDialog.h"
-#include "QAppendDialog.h"
-#include "QEditDialog.h"
-#include "QResArscParser.h"
-#include "QTreeWidgetItem_ArscValue.h"
-#include "SimpleRichText.h"
 QResArscEditor::QResArscEditor(QWidget* _parent)
 	: QResArscEditorUI(_parent), m_valueMenu(NULL), m_treeMenu(NULL), m_basePath(".")
 {
@@ -31,19 +32,34 @@ void QResArscEditor::onOpenReleased_Slot(void)
 		tr("ARSC File (*.arsc);;APK File (*.apk)"), NULL, QFileDialog::DontConfirmOverwrite);
 	if (t_FileName.isEmpty())
 		return;
+	qDebug() << "Open ARSC File:" << t_FileName;
 	m_basePath = QFileInfo(t_FileName).absolutePath();
 	m_LE_filePath->setText(t_FileName);
-	m_parser->readFile(t_FileName);
+	bool t_readOk = m_parser->readFile(t_FileName);
 
 	m_TW_tree->clear();
-	m_parser->traversalAllTablePackage(std::bind(&QResArscEditor::onRefreshTablePackage, this, std::placeholders::_1, std::placeholders::_2));
+
+	if (t_readOk)
+	{
+		m_parser->traversalAllTablePackage(std::bind(&QResArscEditor::onRefreshTablePackage, this, std::placeholders::_1, std::placeholders::_2));
+		m_TB_save->setEnabled(true);
+		m_TB_saveas->setEnabled(true);
+		QMessageBox::information(this, tr("information"), tr("File read completed !"));
+	}
+	else
+		QMessageBox::warning(this, tr("warning"), tr("The specified file read error !"));
 }
 void QResArscEditor::onSaveReleased_Slot(void)
 {
+	qDebug() << "Save ARSC File:" << m_LE_filePath->text();
 	if (!m_parser->writeFile(m_LE_filePath->text()))
 		QMessageBox::warning(this, tr("warning"), tr("The specified file cannot be written in !"));
 	else
+	{
 		QMessageBox::information(this, tr("information"), tr("File write completed !"));
+		if (m_LE_filePath->text().endsWith(".apk", Qt::CaseInsensitive)) //如果是APK文件，提示需要重新签名
+			QMessageBox::information(this, tr("information"), tr("This APK file needs to be re-signed before it can be installed !"));
+	}
 }
 void QResArscEditor::onSaveAsReleased_Slot(void)
 {
@@ -54,12 +70,7 @@ void QResArscEditor::onSaveAsReleased_Slot(void)
 	if (t_FileName.isEmpty())
 		return;
 
-	if (t_FileName.endsWith(".apk", Qt::CaseInsensitive) && !QFile::copy(m_LE_filePath->text(), t_FileName))
-	{
-		QMessageBox::warning(this, tr("warning"), tr("The specified file cannot be written in !"));
-		return;
-	}
-
+	qDebug() << "Save ARSC File:" << t_FileName;
 	m_basePath = QFileInfo(t_FileName).absolutePath();
 	m_LE_filePath->setText(t_FileName);
 	if (!m_parser->writeFile(t_FileName))

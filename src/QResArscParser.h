@@ -15,6 +15,7 @@
 #include <QObject>
 
 typedef	std::function< void(const QString&, const PTablePackage&) > TTRAVERSAL_ALL_TABLEPACKAGE;
+struct zip_source;
 
 class QResArscParser : public QObject
 {
@@ -26,21 +27,23 @@ public:
 	QResArscParser& operator=(const QResArscParser&) = delete;
 	~QResArscParser();
 	void reset(void);
-	void readFile(const QString& _path);
-	void readBuff(const QByteArray& _buff);
+	bool readFile(const QString& _path);
+	bool readBuff(const QByteArray& _buff);
 	bool writeFile(const QString& _path);
 	void writeBuff(QByteArray& _buff);
 	void traversalAllTablePackage(TTRAVERSAL_ALL_TABLEPACKAGE _callBack);
 private:
-	void readApkFile(const QString& _path);
-	void readArscFile(const QString& _path);
+	bool readApkFile(const QString& _path);
+	bool readApkFile(const QByteArray& _buff);
+	bool readArscFile(const QString& _path);
 	bool writeApkFile(const QString& _path);
+	bool updateApkFileBuff(void);
 	bool writeArscFile(const QString& _path);
 private:
 	QPublicFinal* m_publicFinal;
-	QStringPool* m_StringPool;
+	QStringPool* m_stringPool;
 	QMap<QString, PTablePackage> m_tablePackages;
-
+	QByteArray m_fileBuff;
 };
 
 #endif // QResArscParser_h__
