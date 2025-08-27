@@ -5,26 +5,29 @@
 
 bool TArscStringStyle::operator<(const TArscStringStyle& _other) const
 {
-	if (ref->guid < _other.ref->guid)
-		return true;
-	if (ref->guid > _other.ref->guid)
-		return false;
-	if (firstChar < _other.firstChar)
-		return true;
-	if (firstChar > _other.firstChar)
-		return false;
-	if (lastChar < _other.lastChar)
-		return true;
-	if (lastChar > _other.lastChar)
-		return false;
+	if (ref->guid != _other.ref->guid)
+		return ref->guid < _other.ref->guid;
+	if (firstChar != _other.firstChar)
+		return firstChar < _other.firstChar;
+	if (lastChar != _other.lastChar)
+		return lastChar < _other.lastChar;
 	return false;	//相等
 }
+
+bool TArscStringStyle::operator==(const TArscStringStyle& _other) const
+{
+	return ref->guid == _other.ref->guid && firstChar == _other.firstChar && lastChar == _other.lastChar;
+}
+
 bool TArscRichString::operator<(const TArscRichString& _other) const
 {
-	if (string < _other.string)
-		return true;
-	if (string > _other.string)
-		return false;
+	if (string != _other.string)
+		return string < _other.string;
+	//Qt5中的QVector的operator==的写法不兼容C++20，所以不用==和!=，只能用<来比较
+	//如果一定要使用，需要在项目中定义_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING或者_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
+	//Qt6中已经修正
+	//if (styles != _other.styles)
+	//	return styles < _other.styles;
 	if (styles < _other.styles)
 		return true;
 	if (styles > _other.styles)

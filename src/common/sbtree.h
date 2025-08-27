@@ -3,18 +3,19 @@
 //	desc:		带排名的tree, 
 //				iterator at(size_type index)		//根据排名查找
 //				size_type rank(key_type const &key) const	//根据KEY得到排名
-//
-//	created:	https://github.com/mm304321141/zzz_lib/blob/master/bpptree.h
+//				Order Statistics Tree, pd_ds
+//	created:	https://github.com/mm304321141/zzz_lib/blob/master/sbtree.h
 //********************************************************************
 #ifndef sbtree_h__
 #define sbtree_h__
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
+#include <xmemory>
 
 template<class config_t>
 class size_balanced_tree
@@ -50,14 +51,16 @@ protected:
 		}
 		value_type value;
 	};
-	typedef typename allocator_type::template rebind<value_node_t>::other node_allocator_t;
+	using node_allocator_t = std::_Rebind_alloc_t<allocator_type, value_node_t>;
+	//typedef typename allocator_type::template rebind<value_node_t>::other node_allocator_t;
 	struct root_node_t : public node_t, public key_compare, public node_allocator_t
 	{
 		template<class any_key_compare, class any_allocator_t> root_node_t(any_key_compare&& comp, any_allocator_t&& alloc) : key_compare(std::forward<any_key_compare>(comp)), node_allocator_t(std::forward<any_allocator_t>(alloc))
 		{
 		}
 	};
-	typedef typename allocator_type::template rebind<root_node_t>::other root_allocator_t;
+	using root_allocator_t = std::_Rebind_alloc_t<allocator_type, root_node_t>;
+	//typedef typename allocator_type::template rebind<root_node_t>::other root_allocator_t;
 	struct head_t : public root_allocator_t
 	{
 		template<class any_allocator_t> head_t(any_allocator_t&& alloc) : root_allocator_t(std::forward<any_allocator_t>(alloc))
@@ -487,7 +490,8 @@ protected:
 	template<class in_root_allocator_t, class in_node_allocator_t> size_balanced_tree(key_compare const& comp, in_root_allocator_t&& root_alloc, in_node_allocator_t&& node_alloc) : head_(std::forward<in_root_allocator_t>(root_alloc))
 	{
 		head_.root = get_root_allocator_().allocate(1);
-		get_root_allocator_().construct(head_.root, comp, std::forward<in_node_allocator_t>(node_alloc));
+		std::allocator_traits<root_allocator_t>::construct(get_root_allocator_(), head_.root, comp, std::forward<in_node_allocator_t>(node_alloc));
+		//get_root_allocator_().construct(head_.root, comp, std::forward<in_node_allocator_t>(node_alloc));
 		set_size_(nil_(), 0);
 		set_root_(nil_());
 		set_most_left_(nil_());
@@ -550,7 +554,8 @@ public:
 	~size_balanced_tree()
 	{
 		clear();
-		get_root_allocator_().destroy(head_.root);
+		std::allocator_traits<root_allocator_t>::destroy(get_root_allocator_(), head_.root);
+		//get_root_allocator_().destroy(head_.root);
 		get_root_allocator_().deallocate(head_.root, 1);
 	}
 	//copy
@@ -601,7 +606,8 @@ public:
 			}
 			value_node_t* node = static_cast<value_node_t*>(tree_memory.get_root_());
 			tree_memory.sbt_erase_<true>(node);
-			get_node_allocator_().destroy(node);
+			std::allocator_traits<node_allocator_t>::destroy(get_node_allocator_(), node);
+			//get_node_allocator_().destroy(node);
 			get_node_allocator_().construct(node, *it++);
 			sbt_insert_hint_(nil_(), node);
 		}
@@ -901,7 +907,8 @@ public:
 	}
 	size_type max_size() const
 	{
-		return node_allocator_t(get_node_allocator_()).max_size();
+		return std::allocator_traits<node_allocator_t>::max_size(get_node_allocator_());
+		//return node_allocator_t(get_node_allocator_()).max_size();
 	}
 
 	//if(index >= size) return end
@@ -1448,7 +1455,8 @@ protected:
 	template<class ...args_t> node_t* sbt_create_node_(args_t &&...args)
 	{
 		value_node_t* node = get_node_allocator_().allocate(1);
-		get_node_allocator_().construct(node, std::forward<args_t>(args)...);
+		std::allocator_traits<node_allocator_t>::construct(get_node_allocator_(), node, std::forward<args_t>(args)...);
+		//get_node_allocator_().construct(node, std::forward<args_t>(args)...);
 		return node;
 	}
 
@@ -1607,7 +1615,8 @@ protected:
 	void sbt_destroy_node_(node_t* node)
 	{
 		value_node_t* value_node = static_cast<value_node_t*>(node);
-		get_node_allocator_().destroy(value_node);
+		std::allocator_traits<node_allocator_t>::destroy(get_node_allocator_(), value_node);
+		//get_node_allocator_().destroy(value_node);
 		get_node_allocator_().deallocate(value_node, 1);
 	}
 
@@ -1799,7 +1808,8 @@ protected:
 		{
 			value_node_t* node = static_cast<value_node_t*>(memory->get_root_());
 			memory->sbt_erase_<true>(node);
-			get_node_allocator_().destroy(node);
+			std::allocator_traits<node_allocator_t>::destroy(get_node_allocator_(), node);
+			//get_node_allocator_().destroy(node);
 			get_node_allocator_().construct(node, std::move(static_cast<value_node_t*>(other)->value));
 			return node;
 		}
@@ -1815,7 +1825,8 @@ protected:
 		{
 			value_node_t* node = static_cast<value_node_t*>(memory->get_root_());
 			memory->sbt_erase_<true>(node);
-			get_node_allocator_().destroy(node);
+			std::allocator_traits<node_allocator_t>::destroy(get_node_allocator_(), node);
+			//get_node_allocator_().destroy(node);
 			get_node_allocator_().construct(node, static_cast<value_node_t*>(other)->value);
 			return node;
 		}

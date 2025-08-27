@@ -14,7 +14,7 @@
 #include <QMap>
 #include <QObject>
 
-typedef	std::function< void(const QString&, const PTablePackage&) > TTRAVERSAL_ALL_TABLEPACKAGE;
+using TTRAVERSAL_ALL_TABLEPACKAGE = std::function< void(const QString&, const PTablePackage&) >;
 struct zip_source;
 
 class QResArscParser : public QObject

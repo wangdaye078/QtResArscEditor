@@ -6,12 +6,12 @@
 //********************************************************************
 #ifndef QTableType_h__
 #define QTableType_h__
-#include <QObject>
-#include <QVector>
-#include <QSharedPointer>
-#include "ResArscStruct.h"
 #include "QStringPool.h"
+#include "ResArscStruct.h"
+#include <QObject>
+#include <QSharedPointer>
 #include <QVariant>
+#include <QVector>
 
 
 enum ETreeItemType
@@ -37,10 +37,10 @@ enum EValueItemRole
 	eValueItemRole_package,
 };
 
-typedef	std::function< void(const QString& _packageName, ETreeItemType _type, uint32_t _typeId, const QString& _name, const QVariant& _v) > TRAVERSE_PACKAGE_DATA_CALLBACK;
+using TRAVERSE_PACKAGE_DATA_CALLBACK = std::function< void(const QString& _packageName, ETreeItemType _type, uint32_t _typeId, const QString& _name, const QVariant& _v) >;
 
 class QTablePackage;
-typedef QSharedPointer<QTablePackage> PTablePackage;
+using PTablePackage = QSharedPointer<QTablePackage>;
 
 struct IResValue
 {
@@ -53,7 +53,7 @@ struct IResValue
 	virtual uint32_t getKeyIndex(void) = 0;
 	virtual IResValue* clone() const = 0;	//克隆一个新的对象，必须实现这个函数
 };
-typedef QSharedPointer<IResValue> PResValue;
+using PResValue = QSharedPointer<IResValue>;
 Q_DECLARE_METATYPE(PResValue)
 
 struct TTableValueEntry : public IResValue		//普通的值，一个名字对于一个值
@@ -148,7 +148,7 @@ struct TTableMapEntry : public IResValue	//数组，一个名字后面还有多�
 };
 
 class QTreeWidgetItem;
-typedef	std::function< QTreeWidgetItem* (QTreeWidgetItem* _parent, uint32_t _idx, EValueItemType _type, const QVariant& _v) > TRAVERSE_SPECIFIC_DATA_CALLBACK;
+using TRAVERSE_SPECIFIC_DATA_CALLBACK = std::function< QTreeWidgetItem* (QTreeWidgetItem* _parent, uint32_t _idx, EValueItemType _type, const QVariant& _v) >;
 
 class TSpecificData
 {
@@ -172,7 +172,7 @@ private:
 	ResTable_type m_tableType;
 	QVector<PResValue> m_entryValue;
 };
-typedef QSharedPointer<TSpecificData> PSpecificData;
+using PSpecificData = QSharedPointer<TSpecificData>;
 Q_DECLARE_METATYPE(PSpecificData)
 
 class QTableType : public QObject
@@ -201,7 +201,7 @@ private:
 	//ID到key的转换，因为不是每个适配里都有全部的ID，default也可能缺少部分，为了保证能快速找到，所以建这个表
 	QMap<uint32_t, uint32_t> m_id_key;
 };
-typedef QSharedPointer<QTableType> PTableType;
+using PTableType = QSharedPointer<QTableType>;
 
 extern QString resValue2String(const Res_value& _value, const PArscRichString& _svalue);
 #endif // QTableType_h__

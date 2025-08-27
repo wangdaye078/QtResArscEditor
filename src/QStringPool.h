@@ -11,13 +11,12 @@
 #include <QList>
 #include <QMap>
 #include <QObject>
+
 //#include "common/bpptree_map.h"
 #include "common/sbtree_map.h"
-struct TArscRichString;
-//#include <memory>
-//typedef std::shared_ptr<TArscRichString> PArscRichString;
 #include "common/shared_ptr.h"
-typedef SRombauts::shared_ptr<TArscRichString> PArscRichString;
+struct TArscRichString;
+using PArscRichString = SRombauts::shared_ptr<TArscRichString>;
 
 struct TArscStringStyle
 {
@@ -25,6 +24,7 @@ struct TArscStringStyle
 	uint32_t firstChar;
 	uint32_t lastChar;
 	bool operator<(const TArscStringStyle& _other) const;
+	bool operator==(const TArscStringStyle& _other) const;
 	TArscStringStyle() :firstChar(0), lastChar(0) {};
 };
 struct TArscRichString
@@ -38,10 +38,11 @@ struct TArscRichString
 };
 
 //QMap不支持这样写，
-//typedef std::map<PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>> ArscRichStringMap;
+//using ArscRichStringMap = std::map<PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>>;
 // 好像有BUG，会导致智能指针的引用数不正常
-//typedef bpptree_map <PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>> ArscRichStringMap;
-typedef bool (*ArscRichStringLessThanFunc)(const PArscRichString&, const PArscRichString&);
+//using ArscRichStringMap = bpptree_map <PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>>;
+
+using ArscRichStringLessThanFunc = bool(*)(const PArscRichString&, const PArscRichString&);
 struct ArscRichStringLessThanFuncWrapper
 {
 	ArscRichStringLessThanFunc func;
@@ -51,9 +52,9 @@ struct ArscRichStringLessThanFuncWrapper
 		return func(_p1, _p2);
 	}
 };
-typedef sbtree_multimap <PArscRichString, int, ArscRichStringLessThanFuncWrapper> ArscRichStringMap;
+using ArscRichStringMap = sbtree_multimap <PArscRichString, int, ArscRichStringLessThanFuncWrapper>;
 //用仿函数比使用std::function要快很多，
-//typedef sbtree_multimap <PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>> ArscRichStringMap;
+//using ArscRichStringMap = sbtree_multimap <PArscRichString, int, std::function<bool(const PArscRichString&, const PArscRichString&)>>;
 class QStringPool : public QObject
 {
 public:

@@ -522,8 +522,8 @@ struct TTmpValue
 		type(_type), data(_data) {
 	};
 };
-typedef QMap<QString, TTmpValue> TValueMap;
-typedef QMap<QString, TValueMap> TArrayMap;
+using TValueMap = QMap<QString, TTmpValue>;
+using TArrayMap = QMap<QString, TValueMap>;
 
 QTreeWidgetItem* onImportSpecificData(const TValueMap& _valueMap, const TArrayMap& _arrayMap, const PTablePackage& _package, uint32_t _typeId, QTreeWidgetItem* _parent, uint32_t _idx, EValueItemType _type, const QVariant& _v)
 {
