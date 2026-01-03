@@ -1,6 +1,6 @@
-#include "QArscString.h"
-#include "common/QUtf8.h"
 #include "common/basicDefine.h"
+#include "common/QUtf8.h"
+#include "QArscString.h"
 
 uint32_t writeStringLen_16(char* _pBuff, const QString& _str)
 {
@@ -73,7 +73,6 @@ QString readString(const char* _pBuff, bool _isUTF8)
 	{
 		uint t_len = readStringLen_8(_pBuff);
 		t_str = utf8_to_QString(_pBuff, t_len);
-		QByteArray t_arr = t_str.toUtf8();
 		Q_ASSERT(_pBuff[t_len] == 0);
 	}
 	return t_str;

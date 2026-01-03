@@ -103,7 +103,7 @@ void QStringPool::readBuff(const char* _buff)
 	{
 		m_strings.insert(ArscRichStringMap::value_type(*i, (*i)->guid));
 		m_guid_to_string.insert((*i)->guid, *i);
-		//理论上，同样的字符串不应该重复出现。
+		//理论上，同样的字符串不应该重复出现。但是结果某些工具（比如AntiSplit-M）处理的，可能出现这个问题。
 		Q_ASSERT(m_string_to_guid.find(*i) == m_string_to_guid.end());
 		m_string_to_guid.insert(ArscRichStringMap::value_type(*i, (*i)->guid));
 	}

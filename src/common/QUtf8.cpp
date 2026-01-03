@@ -4,7 +4,6 @@
 
 QString utf8_to_QString(const char* _pBuff, quint32 _len)
 {
-	QByteArray t_byteArr(_pBuff, _len);
 	int t_needlen = (int)u8decodelen(_pBuff) + 1;
 	QVector<ucs4_t> t_ucsBuff(t_needlen, 0);
 	int t_decodelen = (int)u8decode(_pBuff, t_ucsBuff.data(), t_needlen, NULL);
@@ -12,7 +11,7 @@ QString utf8_to_QString(const char* _pBuff, quint32 _len)
 	for (int i = 0, j = 0; i < t_decodelen; ++i)
 	{
 		uint32_t t_ucs4 = t_ucsBuff[i];
-		if (t_ucs4 > 0x10FFFF || (0xD800 <= t_ucs4 && t_ucs4 <= 0xDFFF))
+		if (t_ucs4 > 0x10FFFF)// || (0xD800 <= t_ucs4 && t_ucs4 <= 0xDFFF))
 		{
 			Q_ASSERT(false);
 		}
@@ -21,6 +20,11 @@ QString utf8_to_QString(const char* _pBuff, quint32 _len)
 			uint32_t t_ucs = t_ucs4 - 0x10000;
 			t_utf16.push_back((ushort)((t_ucs >> 10) + 0xD800));
 			t_utf16.push_back((ushort)((t_ucs & 0x3FF) + 0xDC00));
+		}
+		else if (0xD800 <= t_ucs4 && t_ucs4 <= 0xDFFF)
+		{
+			//utf-16的代理项范围，规范情况下是不允许直接使用的，但是某些不规范编码的情况下，也会出现这种情况
+			t_utf16.push_back((ushort)t_ucs4);
 		}
 		else
 			t_utf16.push_back((ushort)t_ucs4);
@@ -56,6 +60,7 @@ QByteArray QString_to_utf8(const QString& _str)
 		}
 		t_ucsBuff.push_back(t_ucs4);
 	}
+	t_ucsBuff.push_back(0);
 	int t_needlen2 = (int)u8encodelen(t_ucsBuff.data()) + 1;
 	QByteArray t_arr(t_needlen2, char('\0'));
 	/*int t_encodelen = (int)*/u8encode(t_ucsBuff.data(), t_arr.data(), t_needlen2, NULL);
