@@ -8,8 +8,8 @@
  * or commercial. It's free.
  */
 
-# include <stdint.h>
 # include <stddef.h>
+# include <stdint.h>
 
 # include "utf8.h"
 
@@ -245,11 +245,11 @@ size_t u8encode(ucs4_t* us, char* des, size_t n, size_t* illegal)
 size_t u8encodelen(ucs4_t* us)
 {
 	size_t len = 0;
-	char tmp[4];
+	char tmp[5];
 	while (*us)
 	{
 		char* ptmp = tmp;
-		size_t left = 4;
+		size_t left = 5;
 		int ret = putu8c(*us, &ptmp, &left);
 		if (ret > 0)
 		{

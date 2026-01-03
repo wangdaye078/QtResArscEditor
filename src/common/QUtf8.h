@@ -10,5 +10,4 @@
 
 extern QString utf8_to_QString(const char* _pBuff, quint32 _len);
 extern QByteArray QString_to_utf8(const QString& _str);
-
 #endif // QUtf8_h__
