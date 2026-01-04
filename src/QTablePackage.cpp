@@ -4,7 +4,8 @@
 #include "SimpleRichText.h"
 
 QTablePackage::QTablePackage(QObject* _parent)
-	: QObject(_parent), m_packageInfo(), m_typeStringPool(false), m_keyStringPool(false)
+	: QObject(_parent), m_packageInfo(), m_typeStringPool("TypeStringPool", false),
+	m_keyStringPool("KeyStringPool", false)
 {
 }
 

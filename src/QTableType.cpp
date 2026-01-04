@@ -1,6 +1,6 @@
+#include "QTablePackage.h"
 #include "QTableType.h"
 #include "SimpleRichText.h"
-#include "QTablePackage.h"
 #include <QDebug>
 static float complexToFloat(quint32 _v)
 {
@@ -72,14 +72,16 @@ uint32_t TTableValueEntry::readBuff(const char* _buff)
 };
 void TTableValueEntry::writeBuff(QTablePackage* _tablePackage, QByteArray& _buff)
 {
-	if ((entry.key.index >> 16) == 0)
+	ResTable_entry t_newEntry = entry;
+	if ((t_newEntry.key.index >> 16) == 0)
 	{
 		//如果m_keyStringPool内容或者排列有修改，那就需要重新计算索引，而且不能在原有entry上面修改，需要复制一个新的entry，
-		uint32_t t_newIdx = _tablePackage->keyGuidToIndex(entry.key.index);
-		Q_ASSERT(t_newIdx == entry.key.index);
+		uint32_t t_newIdx = _tablePackage->keyGuidToIndex(t_newEntry.key.index);
+		if (t_newIdx != t_newEntry.key.index)
+			t_newEntry.key.index = t_newIdx;
 	}
 
-	_buff.append(reinterpret_cast<const char*>(&entry), sizeof(ResTable_entry));
+	_buff.append(reinterpret_cast<const char*>(&t_newEntry), sizeof(ResTable_entry));
 	Res_value t_tmpv(value);
 	if (t_tmpv.dataType == Res_value::_DataType::TYPE_STRING)
 	{
@@ -108,12 +110,14 @@ uint32_t ResTable_pairs::readBuff(const char* _buff)
 }
 void ResTable_pairs::writeBuff(QTablePackage* _tablePackage, QByteArray& _buff)
 {
-	if ((key.ident >> 16) == 0)
+	ResTable_ref t_newKey = key;
+	if ((t_newKey.ident >> 16) == 0)
 	{
-		uint32_t t_newIdent = _tablePackage->keyGuidToIndex(key.ident);
-		Q_ASSERT(t_newIdent == key.ident);
+		uint32_t t_newIdent = _tablePackage->keyGuidToIndex(t_newKey.ident);
+		if (t_newIdent != t_newKey.ident)
+			t_newKey.ident = t_newIdent;
 	}
-	_buff.append(reinterpret_cast<const char*>(&key), sizeof(ResTable_ref));
+	_buff.append(reinterpret_cast<const char*>(&t_newKey), sizeof(ResTable_ref));
 	Res_value t_tmpv(value);
 	if (t_tmpv.dataType == Res_value::_DataType::TYPE_STRING)
 	{
@@ -146,12 +150,14 @@ uint32_t TTableMapEntry::readBuff(const char* _buff)
 };
 void TTableMapEntry::writeBuff(QTablePackage* _tablePackage, QByteArray& _buff)
 {
-	if ((entry.key.index >> 16) == 0)
+	ResTable_map_entry t_newEntry = entry;
+	if ((t_newEntry.key.index >> 16) == 0)
 	{
-		uint32_t t_newIdx = _tablePackage->keyGuidToIndex(entry.key.index);
-		Q_ASSERT(t_newIdx == entry.key.index);
+		uint32_t t_newIdx = _tablePackage->keyGuidToIndex(t_newEntry.key.index);
+		if (t_newIdx != t_newEntry.key.index)
+			t_newEntry.key.index = t_newIdx;
 	}
-	_buff.append(reinterpret_cast<const char*>(&entry), sizeof(ResTable_map_entry));
+	_buff.append(reinterpret_cast<const char*>(&t_newEntry), sizeof(ResTable_map_entry));
 	for (int i = 0; i < pairs.size(); ++i)
 		pairs[i]->writeBuff(_tablePackage, _buff);
 };

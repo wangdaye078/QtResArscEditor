@@ -10,7 +10,7 @@ QResArscParser::QResArscParser(QObject* parent)
 	: QObject(parent)
 {
 	m_publicFinal = new QPublicFinal(this);
-	m_stringPool = new QStringPool(true, this);
+	m_stringPool = new QStringPool("GlobalStringPool", true, this);
 	g_publicStrPool = m_stringPool;
 	g_publicFinal = m_publicFinal;
 }

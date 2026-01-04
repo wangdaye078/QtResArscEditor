@@ -38,8 +38,8 @@ bool TArscRichString::operator<(const TArscRichString& _other) const
 
 QStringPool* g_publicStrPool;
 
-QStringPool::QStringPool(bool _removeUnuse, QObject* _parent)
-	: QObject(_parent), m_removeUnuse(_removeUnuse), m_stringPoolHeader()
+QStringPool::QStringPool(const QString& _name, bool _removeUnuse, QObject* _parent)
+	: QObject(_parent), m_name(_name), m_removeUnuse(_removeUnuse), m_stringPoolHeader()
 	, m_strings(ArscRichStringLessThanFuncWrapper(&styleFirstLessThan))
 	, m_string_to_guid(ArscRichStringLessThanFuncWrapper(&strongLessThan))
 	//m_strings(styleFirstLessThan), m_string_to_guid(strongLessThan)
@@ -99,14 +99,44 @@ void QStringPool::readBuff(const char* _buff)
 			t_pStyleBuff += sizeof(ResStringPool_span);
 		}
 	}
+	//-----------查找重复的字符串---------------------------------
+	ArscRichStringLessThanFuncWrapper t_funcWrapper(&strongLessThan);
+	ArscRichStringMap t_string_to_guid(t_funcWrapper);
 	for (QVector<PArscRichString>::iterator i = t_strings.begin(); i != t_strings.end(); ++i)
 	{
+		ArscRichStringMap::iterator t_findIt = t_string_to_guid.find(*i);
+		if (t_findIt != t_string_to_guid.end())
+		{
+			qDebug() << Qt::hex << Qt::showbase << m_name << "duplicate string:" << (*i)->string << "guid:" << (*i)->guid << "->" << (t_findIt->second);
+			m_repeat_string_guid_map.insert((*i)->guid, t_findIt->second);
+			continue;
+		}
+		t_string_to_guid.insert(ArscRichStringMap::value_type(*i, (*i)->guid));
+	}
+	for (QVector<PArscRichString>::iterator i = t_strings.begin(); i != t_strings.end(); ++i)
+	{
+		PArscRichString& t_pArscRichString = *i;
+		for (int j = 0; j < t_pArscRichString->styles.count(); ++j)
+		{
+			int t_oldGuid = t_pArscRichString->styles[j].ref->guid;
+			if (m_repeat_string_guid_map.find(t_oldGuid) != m_repeat_string_guid_map.end())
+			{
+				int t_newGuid = m_repeat_string_guid_map.value(t_oldGuid);
+				t_pArscRichString->styles[j].ref->guid = t_newGuid;
+			}
+		}
+	}
+	//-----------填充字符串池---------------------------------
+	for (QVector<PArscRichString>::iterator i = t_strings.begin(); i != t_strings.end(); ++i)
+	{
+		if (m_string_to_guid.find(*i) != m_string_to_guid.end())
+			continue;
 		m_strings.insert(ArscRichStringMap::value_type(*i, (*i)->guid));
 		m_guid_to_string.insert((*i)->guid, *i);
 		//理论上，同样的字符串不应该重复出现。但是结果某些工具（比如AntiSplit-M）处理的，可能出现这个问题。
-		Q_ASSERT(m_string_to_guid.find(*i) == m_string_to_guid.end());
 		m_string_to_guid.insert(ArscRichStringMap::value_type(*i, (*i)->guid));
 	}
+	m_stringPoolHeader.stringCount -= m_repeat_string_guid_map.size();
 	t_strings.clear();
 }
 void QStringPool::writeBuff(QByteArray& _buff)
@@ -198,6 +228,14 @@ bool QStringPool::strongLessThan(const PArscRichString& _p1, const PArscRichStri
 PArscRichString QStringPool::getGuidRef(uint32_t _guid) const
 {
 	QMap<int, PArscRichString>::const_iterator t_pIter = m_guid_to_string.find(_guid);
+	if (t_pIter == m_guid_to_string.end())
+	{
+		QMap<int, int>::const_iterator t_repeatIter = m_repeat_string_guid_map.find(_guid);
+		if (t_repeatIter != m_repeat_string_guid_map.end())
+		{
+			t_pIter = m_guid_to_string.find(t_repeatIter.value());
+		}
+	}
 	return (t_pIter == m_guid_to_string.end()) ? PArscRichString() : t_pIter.value();
 }
 uint32_t QStringPool::getRefIndex(const PArscRichString& _s) const

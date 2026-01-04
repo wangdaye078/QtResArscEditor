@@ -58,7 +58,7 @@ using ArscRichStringMap = sbtree_multimap <PArscRichString, int, ArscRichStringL
 class QStringPool : public QObject
 {
 public:
-	QStringPool(bool _removeUnuse = false, QObject* _parent = NULL);
+	QStringPool(const QString& _name = "", bool _removeUnuse = false, QObject* _parent = NULL);
 	QStringPool(const QStringPool&) = delete;
 	QStringPool& operator=(const QStringPool&) = delete;
 	~QStringPool();
@@ -85,6 +85,7 @@ private:
 	void removeUnusedString(void);
 private:
 public:
+	QString m_name;
 	GuidFactory m_GuidFactory;
 	bool m_removeUnuse;		//回写的时候删除未使用的
 	ResStringPool_header m_stringPoolHeader;
@@ -93,6 +94,7 @@ public:
 	QMap<int, PArscRichString> m_guid_to_string;
 	//使用strongLessThan排序的map
 	ArscRichStringMap m_string_to_guid;
+	QMap<int, int> m_repeat_string_guid_map;
 };
 
 //最小引用次数，因为上面有3个map，所以有3次引用，如果等于这个值，就可以释放掉了。
