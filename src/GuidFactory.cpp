@@ -13,7 +13,7 @@ void GuidFactory::reset()
 {
 	m_guid = 0;
 }
-int GuidFactory::getNewGuid()
+uint32_t GuidFactory::getNewGuid()
 {
 	return m_guid++;
 }

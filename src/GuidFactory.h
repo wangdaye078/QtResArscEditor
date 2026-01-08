@@ -6,7 +6,7 @@
 //********************************************************************
 #ifndef GuidFactory_h__
 #define GuidFactory_h__
-
+#include <stdint.h>
 
 class GuidFactory
 {
@@ -14,9 +14,9 @@ public:
 	GuidFactory();
 	~GuidFactory();
 	void reset();
-	int getNewGuid();
+	uint32_t getNewGuid();
 private:
-	int m_guid;
+	uint32_t m_guid;
 };
 
 #endif // GuidFactory_h__

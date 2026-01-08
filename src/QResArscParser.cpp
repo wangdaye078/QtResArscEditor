@@ -17,6 +17,8 @@ QResArscParser::QResArscParser(QObject* parent)
 
 QResArscParser::~QResArscParser()
 {
+	delete m_publicFinal;
+	delete m_stringPool;
 	g_publicFinal = NULL;
 	g_publicStrPool = NULL;
 }
