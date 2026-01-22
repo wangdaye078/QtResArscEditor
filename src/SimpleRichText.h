@@ -79,7 +79,7 @@ public:
 
 struct TArscRichString;
 extern QString encodeRichText(const TArscRichString* _input);
-extern TArscRichString* decodeRichText(const QString& _input);
+extern TArscRichString* decodeRichText(QStringPool* _stringPool, const QString& _input);
 
 
 #endif // SimpleRichText_h__

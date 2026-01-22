@@ -80,6 +80,18 @@
     <ClCompile Include="src\QEditDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\QManifestParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QResXmlTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QAndroidParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QAndroidAttribute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GuidFactory.h">
@@ -130,6 +142,12 @@
     <ClInclude Include="src\QTablePackage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\QAndroidParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QResXmlTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\QResArscParser.h">
@@ -151,6 +169,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\QEditDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\QManifestParser.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\QAndroidAttribute.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

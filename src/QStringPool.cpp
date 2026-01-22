@@ -23,6 +23,8 @@ bool TArscRichString::operator<(const TArscRichString& _other) const
 {
 	if (string != _other.string)
 		return string < _other.string;
+	if (resId != _other.resId)
+		return resId < _other.resId;
 	//Qt5中的QVector的operator==的写法不兼容C++20，所以不用==和!=，只能用<来比较
 	//如果一定要使用，需要在项目中定义_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING或者_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
 	//Qt6中已经修正
@@ -38,10 +40,11 @@ bool TArscRichString::operator<(const TArscRichString& _other) const
 
 QStringPool* g_publicStrPool;
 
-QStringPool::QStringPool(const QString& _name, bool _removeUnuse, QObject* _parent)
-	: QObject(_parent), m_name(_name), m_removeUnuse(_removeUnuse), m_stringPoolHeader()
-	, m_strings(ArscRichStringLessThanFuncWrapper(&styleFirstLessThan))
-	, m_string_to_guid(ArscRichStringLessThanFuncWrapper(&strongLessThan))
+QStringPool::QStringPool(const QString& _name, bool _removeUnuse, bool _stringSorting, QObject* _parent)
+	: QObject(_parent), m_name(_name), m_removeUnuse(_removeUnuse)
+	, m_stringPoolHeader()
+	, m_strings(ArscRichStringLessThanFuncWrapper(&styleFirstLessThan, _stringSorting))
+	, m_string_to_guid(ArscRichStringLessThanFuncWrapper(&strongLessThan, false))
 	//m_strings(styleFirstLessThan), m_string_to_guid(strongLessThan)
 {
 }
@@ -56,7 +59,7 @@ void QStringPool::reset(void)
 	m_guid_to_string.clear();
 	m_string_to_guid.clear();
 }
-void QStringPool::readBuff(const char* _buff)
+void QStringPool::readBuff(const char* _buff, const QVector<uint32_t>& _resIDs)
 {
 	reset();
 	m_stringPoolHeader = *reinterpret_cast<const ResStringPool_header*>(_buff);
@@ -79,8 +82,11 @@ void QStringPool::readBuff(const char* _buff)
 	for (uint32_t i = 0; i < m_stringPoolHeader.stringCount; i++)
 	{
 		PArscRichString t_pArscRichString(new TArscRichString());
-		t_pArscRichString->guid = m_GuidFactory.getNewGuid();
-		t_pArscRichString->string = readString(t_pStringsBuff + t_stringsOffsets[i], t_isUTF8);
+		t_pArscRichString->guid = m_GuidFactory.getNewGuid();		//从0开始
+		QString t_str = readString(t_pStringsBuff + t_stringsOffsets[i], t_isUTF8);
+		if (i < (uint32_t)_resIDs.size())
+			t_pArscRichString->resId = _resIDs[i];
+		t_pArscRichString->string = t_str;
 		t_strings[i] = t_pArscRichString;
 	}
 	const char* t_pStylesBuff = _buff + m_stringPoolHeader.stylesStart;
@@ -100,7 +106,7 @@ void QStringPool::readBuff(const char* _buff)
 		}
 	}
 	//-----------查找重复的字符串---------------------------------
-	ArscRichStringLessThanFuncWrapper t_funcWrapper(&strongLessThan);
+	ArscRichStringLessThanFuncWrapper t_funcWrapper(&strongLessThan, false);
 	ArscRichStringMap t_string_to_guid(t_funcWrapper);
 	for (QVector<PArscRichString>::iterator i = t_strings.begin(); i != t_strings.end(); ++i)
 	{
@@ -161,10 +167,14 @@ void QStringPool::writeBuff(QByteArray& _buff)
 	uint32_t t_stringsBegin_pos = _buff.size();
 	Q_ASSERT(m_stringPoolHeader.stringCount == m_strings.size());
 	uint32_t t_idx = 0;
+	m_resIDs.clear();
 	for (ArscRichStringMap::iterator i = m_strings.begin(); i != m_strings.end(); ++i)
 	{
 		reinterpret_cast<uint32_t*>(_buff.data() + t_stringOffsets_pos)[t_idx] = _buff.size() - t_stringsBegin_pos;
-		writeString(_buff, i->first->string, t_isUTF8);
+		QString t_str = i->first->string;
+		if (i->first->resId != 0)
+			m_resIDs.push_back(i->first->resId);
+		writeString(_buff, t_str, t_isUTF8);
 		//不设置index也可以，用size_type rank(key_type const& key)也可得到等价的index，但是每次计算可能会慢那么一点
 		i->first->index = t_idx++;
 	}
@@ -210,18 +220,23 @@ void QStringPool::writeBuff(QByteArray& _buff)
 	reinterpret_cast<ResTable_package*>(_buff.data() + t_stringPoolHeader_pos)->header.size = _buff.size() - t_stringPoolHeader_pos;
 }
 
-bool QStringPool::styleFirstLessThan(const PArscRichString& _p1, const PArscRichString& _p2)
+bool QStringPool::styleFirstLessThan(const PArscRichString& _p1, const PArscRichString& _p2, bool _stringSorting)
 {
+	if (_p1->resId != 0 && _p2->resId != 0)	//resId都不为0的情况下，resId小的排前面
+		return _p1->resId < _p2->resId;
+	else if (_p1->resId + _p2->resId != 0)	//一个为0一个不为0，为0的排后面
+		return _p1->resId > _p2->resId;
+	//resId都为0的情况下：
 	//都是0或者都不是0的情况，就按guid，小的排前面，原始的arsc文件里面，字符串也没有按编码排序，所以我们也就不用了。
 	//而且对于typeStringPool和keyStringPool来说，以当前代码的逻辑，他们的顺序不能改变，所以也不能按string的内容排序，只能使用guid来排序。
 	if ((_p1->styles.size() == 0 && _p2->styles.size() == 0) || (_p1->styles.size() > 0 && _p2->styles.size() > 0))
 	{
-		return _p1->guid < _p2->guid;
+		return _stringSorting ? (_p1->string < _p2->string) : (_p1->guid < _p2->guid);
 	}
 	//一个是0一个不是0的时候，不是0的排前面
 	return _p1->styles.size() > _p2->styles.size();
 }
-bool QStringPool::strongLessThan(const PArscRichString& _p1, const PArscRichString& _p2)
+bool QStringPool::strongLessThan(const PArscRichString& _p1, const PArscRichString& _p2, bool)
 {
 	return *(_p1.get()) < *(_p2.get());
 }
@@ -241,6 +256,13 @@ PArscRichString QStringPool::getGuidRef(uint32_t _guid) const
 uint32_t QStringPool::getRefIndex(const PArscRichString& _s) const
 {
 	return (uint32_t)m_strings.rank(_s);
+}
+PArscRichString QStringPool::getIndexRef(uint32_t _index) const
+{
+	if (_index >= m_strings.size())
+		return PArscRichString();
+	else
+		return m_strings.at(_index)->first;
 }
 uint32_t QStringPool::getRefCount(PArscRichString _rich)
 {
@@ -287,6 +309,10 @@ void QStringPool::removeRichString(PArscRichString _rich)
 	m_stringPoolHeader.stringCount--;
 	if (_rich->styles.size() > 0)
 		m_stringPoolHeader.styleCount--;
+}
+const QVector<uint32_t>& QStringPool::getResIDs(void) const
+{
+	return m_resIDs;
 }
 void QStringPool::removeUnusedString(void)
 {

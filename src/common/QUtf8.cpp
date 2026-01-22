@@ -31,7 +31,8 @@ QString utf8_to_QString(const char* _pBuff, quint32 _len)
 	}
 	return QString::fromUtf16(t_utf16.data(), t_utf16.length());
 }
-
+//正常规范应该是允许UCS4的，但是某些不规范编码的情况下，可能会出现兼容问题，所以这里提供一个开关
+bool allow_ucs4 = true;
 QByteArray QString_to_utf8(const QString& _str)
 {
 	QVector<ucs4_t> t_ucsBuff;
@@ -40,7 +41,7 @@ QByteArray QString_to_utf8(const QString& _str)
 	{
 		uint32_t t_ucs4;
 		ushort t_ch = *(t_pstr + i);
-		if (t_ch >= 0xD800 && t_ch <= 0xDBFF && (i + 1) < _str.length())
+		if (allow_ucs4 && t_ch >= 0xD800 && t_ch <= 0xDBFF && (i + 1) < _str.length())
 		{
 			ushort t_ch2 = *(t_pstr + i + 1);
 			if (t_ch2 >= 0xDC00 && t_ch2 <= 0xDFFF)

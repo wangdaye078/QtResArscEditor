@@ -1,4 +1,6 @@
+#include "QAndroidAttribute.h"
 #include "QEditDialog.h"
+#include "QPublicFinal.h"
 #include "QResArscParser.h"
 #include <QCheckBox>
 #include <QComboBox>
@@ -13,7 +15,6 @@
 #include <QStackedWidget>
 #include <QTextBrowser>
 #include <QTextEdit>
-
 QEditDialog::QEditDialog(QWidget* _parent)
 	: QDialog(_parent)
 {
@@ -261,10 +262,12 @@ void QEditDialog::setTablePackage(QTablePackage* _package)
 {
 	m_tablePackage = _package;
 }
-void QEditDialog::setData(const ResTable_config& _config, uint32_t _type, uint32_t _data, const QString& _sdata)
+void QEditDialog::setKeyStringPool(QStringPool* _keyStringPool)
 {
-	m_config = _config;
-	m_type = _type;
+	m_keyStringPool = _keyStringPool;
+}
+void QEditDialog::setData(uint32_t _type, uint32_t _data, const QString& _sdata)
+{
 	m_data = _data;
 	m_sdata = _sdata;
 	int t_newIdx = m_CB_Type->findData(_type);
@@ -296,19 +299,19 @@ void QEditDialog::onStackedCurrentChanged_slot(int _index)
 		m_CB_ShowRichText->setChecked(false);
 		break;
 	case 1:
-		m_LE_Color->setText(resValue2String(t_value, PArscRichString()));
+		m_LE_Color->setText(resValue2String(m_LE_Name->text(), t_value, PArscRichString()));
 		break;
 	case 2:
-		m_LE_Digital->setText(resValue2String(t_value, PArscRichString()));
+		m_LE_Digital->setText(resValue2String(m_LE_Name->text(), t_value, PArscRichString()));
 		break;
 	case 3:
-		m_LE_Hex->setText(resValue2String(t_value, PArscRichString()));
+		m_LE_Hex->setText(resValue2String(m_LE_Name->text(), t_value, PArscRichString()));
 		break;
 	case 4:
 		m_CB_Boolen->setCurrentIndex(m_data == 0 ? 0 : 1);
 		break;
 	case 5:
-		m_LE_Reference->setText(resValue2String(t_value, PArscRichString()));
+		m_LE_Reference->setText(resValue2String(m_LE_Name->text(), t_value, PArscRichString()));
 		break;
 	}
 }
@@ -350,7 +353,19 @@ void QEditDialog::onReferenceTextChanged_slot(const QString& _text)
 		t_prefix = "?";
 		t_addType = false;
 	}
-	m_TE_Reference->setText(m_tablePackage->getKeyString(t_prefix, t_addType, t_data));
+	QString t_keyString;
+	if (m_tablePackage != NULL)
+		t_keyString = m_tablePackage->getKeyString(t_prefix, t_addType, t_data);
+	else if ((t_data >> 16) == 0)
+		t_keyString = m_keyStringPool->getGuidRef(t_data)->string;
+	else if ((t_data >> 24) == 1 && (t_data & 0xFF0000) != 0)
+		t_keyString = g_publicFinal->getDataName(t_data)->string;
+	else if ((t_data >> 24) == 1 && (t_data & 0xFF0000) == 0)
+		t_keyString = QString("0x%1").arg(t_data, 8, 16, QChar('0'));
+	else
+		t_keyString = QString("0x%1").arg(t_data, 8, 16, QChar('0'));
+
+	m_TE_Reference->setText(t_keyString);
 }
 void QEditDialog::onShowRichTextStateChanged_slot(int)
 {
@@ -367,34 +382,7 @@ uint32_t QEditDialog::getType(void) const
 {
 	return m_CB_Type->currentData().toUInt();
 }
-
-float G_MULT[] = { 1.0, 128.0, 256, 256 };
-static uint32_t complexToUint2(float _value)
-{
-	float t_value = _value / MANTISSA_MULT;
-	int t_multIdx = 0;
-	//最后2位是0，就不用再乘了，大于 float(0xFFFFFF)再乘就溢出了，没有数可乘了。
-	while ((int(t_value) & 0xFF) != 0 && t_value <= float(0xFFFFFF) && t_multIdx < _countof(G_MULT) - 1)
-	{
-		t_value *= G_MULT[++t_multIdx];
-	}
-	return (uint32_t(t_value) & 0xFFFFFF00) | (t_multIdx << 4);
-}
-QRegExp g_DFRegExp("^([\\-0-9\\.]+)([%A-Za-z]*)$");
-static uint32_t getDimensionFractionData(float _v, float _divisor, const QString& _e, const char* _suffix[], int _suffixCount)
-{
-	uint32_t t_value = complexToUint2(_v / _divisor);
-	for (int i = 0; i < _suffixCount; ++i)
-	{
-		if (_e == QString(_suffix[i]))
-		{
-			t_value |= i;
-			return t_value;
-		}
-	}
-	return 0;
-}
-uint32_t QEditDialog::qstringToData(Res_value::_DataType _dataType, const QString& _str)
+uint32_t QEditDialog::qstringToData(const QString& _name, Res_value::_DataType _dataType, const QString& _str)
 {
 	switch (_dataType)
 	{
@@ -407,26 +395,34 @@ uint32_t QEditDialog::qstringToData(Res_value::_DataType _dataType, const QStrin
 	case Res_value::_DataType::TYPE_INT_COLOR_RGB4:
 		return getHexTextData(_str, NULL);
 	case Res_value::_DataType::TYPE_INT_DEC:
-		return _str.toUInt(NULL, 10);
+		return g_androidAttribute->string2value(_name, _str);//_str.toUInt(NULL, 10);
 	case Res_value::_DataType::TYPE_FLOAT:
 		{
 			float t_f = _str.toFloat();
 			return *reinterpret_cast<uint32_t*>(&t_f);
 		}
 	case Res_value::_DataType::TYPE_DIMENSION:
-		if (g_DFRegExp.indexIn(_str) == 0)
-			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 1, g_DFRegExp.capturedTexts()[2], DIMENSION_UNIT_STRS, 6);
-		return 0;
+		{
+			QRegularExpressionMatch t_match = g_DFRegExp.match(_str);
+			if (t_match.hasMatch())
+				return getDimensionFractionData(t_match.captured(1).toFloat(), 1, t_match.captured(2), DIMENSION_UNIT_STRS, 6);
+			return 0;
+		}
 	case Res_value::_DataType::TYPE_FRACTION:
-		if (g_DFRegExp.indexIn(_str) == 0)
-			return getDimensionFractionData(g_DFRegExp.capturedTexts()[1].toFloat(), 100, g_DFRegExp.capturedTexts()[2], FRACTION_UNIT_STRS, 2);
+		{
+			QRegularExpressionMatch t_match = g_DFRegExp.match(_str);
+			if (t_match.hasMatch())
+				return getDimensionFractionData(t_match.captured(1).toFloat(), 100, t_match.captured(2), FRACTION_UNIT_STRS, 2);
+			return 0;
+		}
 		return 0;
 	case Res_value::_DataType::TYPE_ATTRIBUTE:
 	case Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE:
-	case Res_value::_DataType::TYPE_INT_HEX:
 		return getHexTextData(_str, NULL);
+	case Res_value::_DataType::TYPE_INT_HEX:
+		return g_androidAttribute->string2value(_name, _str);//getHexTextData(_str, NULL);
 	case Res_value::_DataType::TYPE_INT_BOOLEAN:
-		return _str.toLower() == QString("true") ? 1 : 0;
+		return _str.toLower() == QString("true") ? uint32_t(-1) : 0;
 	case Res_value::_DataType::TYPE_REFERENCE:
 	case Res_value::_DataType::TYPE_DYNAMIC_REFERENCE:
 		return getHexTextData(_str, NULL);
@@ -447,21 +443,21 @@ uint32_t QEditDialog::getData(void) const
 	case Res_value::_DataType::TYPE_INT_COLOR_RGB8:
 	case Res_value::_DataType::TYPE_INT_COLOR_ARGB4:
 	case Res_value::_DataType::TYPE_INT_COLOR_RGB4:
-		return qstringToData(t_dataType, m_LE_Color->text());
+		return qstringToData(m_LE_Name->text(), t_dataType, m_LE_Color->text());
 	case Res_value::_DataType::TYPE_INT_DEC:
 	case Res_value::_DataType::TYPE_FLOAT:
 	case Res_value::_DataType::TYPE_DIMENSION:
 	case Res_value::_DataType::TYPE_FRACTION:
-		return qstringToData(t_dataType, m_LE_Digital->text());
+		return qstringToData(m_LE_Name->text(), t_dataType, m_LE_Digital->text());
 	case Res_value::_DataType::TYPE_ATTRIBUTE:
 	case Res_value::_DataType::TYPE_DYNAMIC_ATTRIBUTE:
 	case Res_value::_DataType::TYPE_INT_HEX:
-		return qstringToData(t_dataType, m_LE_Hex->text());
+		return qstringToData(m_LE_Name->text(), t_dataType, m_LE_Hex->text());
 	case Res_value::_DataType::TYPE_INT_BOOLEAN:
-		return qstringToData(t_dataType, m_CB_Boolen->currentText());
+		return qstringToData(m_LE_Name->text(), t_dataType, m_CB_Boolen->currentText());
 	case Res_value::_DataType::TYPE_REFERENCE:
 	case Res_value::_DataType::TYPE_DYNAMIC_REFERENCE:
-		return qstringToData(t_dataType, m_LE_Reference->text());
+		return qstringToData(m_LE_Name->text(), t_dataType, m_LE_Reference->text());
 	default:
 		return 0;
 	}

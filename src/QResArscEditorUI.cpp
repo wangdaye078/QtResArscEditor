@@ -2,6 +2,7 @@
 #include "QAppendDialog.h"
 #include "QEditDialog.h"
 #include "QResArscEditorUI.h"
+#include "src/common/QUtf8.h"
 #include <QAction>
 #include <QCoreApplication>
 #include <QGridLayout>
@@ -42,10 +43,19 @@ void QResArscEditorUI::RetranslateUi(void)
 	m_AC_DeleteValue->setText(tr("DeleteValue"));
 	m_AC_EditValue->setText(tr("EditValue"));
 	m_AC_ExpandAll->setText(tr("ExpandAll"));
+	m_AC_AddAttribute->setText(tr("AddAttribute"));
+	m_AC_DeleteAttribute->setText(tr("DeleteAttribute"));
 	m_AC_AddLocale->setText(tr("AddLocale"));
 	m_AC_ExportLocale->setText(tr("ExportLocale"));
 	m_AC_ImportLocale->setText(tr("ImportLocale"));
+	m_AC_AppendSubElement->setText(tr("AppendSubElement"));
+	m_AC_DeleteElement->setText(tr("DeleteElement"));
+	m_AC_ElementMoveUp->setText(tr("ElementMoveUp"));
+	m_AC_ElementMoveDown->setText(tr("ElementMoveDown"));
+	m_AC_ExportXml->setText(tr("ExportXml"));
 	m_AC_PrintPublicStrings->setText(tr("PrintPublicStrings"));
+	m_AC_ExpandTree->setText(tr("ExpandAll"));
+	m_AC_AllowUcs4->setText(tr("AllowUcs4"));
 
 	m_TB_open->setToolTip(tr("Open ARSC File"));
 	m_TB_save->setToolTip(tr("Save ARSC File"));
@@ -136,14 +146,34 @@ void QResArscEditorUI::CreateControl(void)
 	m_AC_EditValue->setObjectName(QString::fromUtf8("m_AC_EditValue"));
 	m_AC_ExpandAll = new QAction(this);
 	m_AC_ExpandAll->setObjectName(QString::fromUtf8("m_AC_ExpandAll"));
+	m_AC_AddAttribute = new QAction(this);
+	m_AC_AddAttribute->setObjectName(QString::fromUtf8("m_AC_AddAttribute"));
+	m_AC_DeleteAttribute = new QAction(this);
+	m_AC_DeleteAttribute->setObjectName(QString::fromUtf8("m_AC_DeleteAttribute"));
 	m_AC_AddLocale = new QAction(this);
 	m_AC_AddLocale->setObjectName(QString::fromUtf8("m_AC_AddLocale"));
 	m_AC_ExportLocale = new QAction(this);
 	m_AC_ExportLocale->setObjectName(QString::fromUtf8("m_AC_ExportLocale"));
 	m_AC_ImportLocale = new QAction(this);
 	m_AC_ImportLocale->setObjectName(QString::fromUtf8("m_AC_ImportLocale"));
+	m_AC_AppendSubElement = new QAction(this);
+	m_AC_AppendSubElement->setObjectName(QString::fromUtf8("m_AC_AppendElement"));
+	m_AC_DeleteElement = new QAction(this);
+	m_AC_DeleteElement->setObjectName(QString::fromUtf8("m_AC_DeleteElement"));
+	m_AC_ElementMoveUp = new QAction(this);
+	m_AC_ElementMoveUp->setObjectName(QString::fromUtf8("m_AC_ElementMoveUp"));
+	m_AC_ElementMoveDown = new QAction(this);
+	m_AC_ElementMoveDown->setObjectName(QString::fromUtf8("m_AC_ElementMoveDown"));
+	m_AC_ExportXml = new QAction(this);
+	m_AC_ExportXml->setObjectName(QString::fromUtf8("m_AC_ExportXml"));
 	m_AC_PrintPublicStrings = new QAction(this);
 	m_AC_PrintPublicStrings->setObjectName(QString::fromUtf8("m_AC_PrintPublicStrings"));
+	m_AC_ExpandTree = new QAction(this);
+	m_AC_ExpandTree->setObjectName(QString::fromUtf8("m_AC_ExpandTree"));
+	m_AC_AllowUcs4 = new QAction(this);
+	m_AC_AllowUcs4->setObjectName(QString::fromUtf8("m_AC_AllowUcs4"));
+	m_AC_AllowUcs4->setCheckable(true);
+	m_AC_AllowUcs4->setChecked(allow_ucs4);
 	//------------------------------------------------
 	connect(m_TB_open, SIGNAL(released()), this, SLOT(onOpenReleased_Slot()));
 	connect(m_TB_save, SIGNAL(released()), this, SLOT(onSaveReleased_Slot()));
@@ -156,12 +186,29 @@ void QResArscEditorUI::CreateControl(void)
 	connect(m_AC_DeleteValue, SIGNAL(triggered()), this, SLOT(onDeleteValueTriggered_slot()));
 	connect(m_AC_EditValue, SIGNAL(triggered()), this, SLOT(onEditValueTriggered_slot()));
 	connect(m_AC_ExpandAll, SIGNAL(triggered()), this, SLOT(onExpandAllTriggered_slot()));
+	connect(m_AC_AddAttribute, SIGNAL(triggered()), this, SLOT(onAddAttributeTriggered_slot()));
+	connect(m_AC_DeleteAttribute, SIGNAL(triggered()), this, SLOT(onDeleteAttributeTriggered_slot()));
 	connect(m_AC_AddLocale, SIGNAL(triggered()), this, SLOT(onAddLocaleTriggered_slot()));
 	connect(m_AC_ExportLocale, SIGNAL(triggered()), this, SLOT(onExportLocaleTriggered_slot()));
 	connect(m_AC_ImportLocale, SIGNAL(triggered()), this, SLOT(onImportLocaleTriggered_slot()));
+	connect(m_AC_AppendSubElement, SIGNAL(triggered()), this, SLOT(onAppendSubElementTriggered_slot()));
+	connect(m_AC_DeleteElement, SIGNAL(triggered()), this, SLOT(onDeleteElementTriggered_slot()));
+	connect(m_AC_ElementMoveUp, &QAction::triggered, [=]() {onElementMoveTriggered_slot(-1); });
+	connect(m_AC_ElementMoveDown, &QAction::triggered, [=]() {onElementMoveTriggered_slot(1); });
+	connect(m_AC_ExportXml, SIGNAL(triggered()), this, SLOT(onExportXmlTriggered_slot()));
 	connect(m_AC_PrintPublicStrings, SIGNAL(triggered()), this, SLOT(onPrintPublicStringsTriggered_slot()));
+	connect(m_AC_ExpandTree, SIGNAL(triggered()), this, SLOT(onExpandTreeTriggered_slot()));
+	connect(m_AC_AllowUcs4, SIGNAL(triggered(bool)), this, SLOT(onAllowUcs4Triggered_slot(bool)));
 }
 void QResArscEditorUI::onExpandAllTriggered_slot(void)
 {
 	m_TW_value->expandAll();
+}
+void QResArscEditorUI::onExpandTreeTriggered_slot(void)
+{
+	m_TW_tree->expandAll();
+}
+void QResArscEditorUI::onAllowUcs4Triggered_slot(bool _checked)
+{
+	allow_ucs4 = _checked;
 }

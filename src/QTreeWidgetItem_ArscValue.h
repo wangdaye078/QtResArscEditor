@@ -16,6 +16,9 @@ public:
 	QTreeWidgetItem_ArscValue(QTreeWidgetItem* _parent);
 	~QTreeWidgetItem_ArscValue();
 	virtual QVariant data(int _column, int _role) const;
+private:
+	QVariant data_table(int _column, int _role) const;
+	QVariant data_xml(int _column, int _role) const;
 };
 
 #endif // QTreeWidgetItem_ArscValue_h__

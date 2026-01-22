@@ -13,11 +13,19 @@ QPublicFinal::~QPublicFinal()
 }
 PArscRichString QPublicFinal::getDataName(uint32_t _data)
 {
-	if (m_finalMap.contains(_data))
-		return m_finalMap[_data];
+	if (m_finalIdMap.contains(_data))
+		return m_finalIdMap[_data];
 	PArscRichString t_str(new TArscRichString());
 	t_str->string = "unknow";
 	return t_str;
+}
+uint32_t QPublicFinal::getDataId(const QString& _dataName)
+{
+	PArscRichString t_str(new TArscRichString());
+	t_str->string = _dataName;
+	if (m_finalStrMap.contains(t_str))
+		return m_finalStrMap[t_str];
+	return uint32_t(-1);
 }
 void QPublicFinal::initFinalData(void)
 {
@@ -44,7 +52,8 @@ void QPublicFinal::initFinalData(void)
 			t_id = t_sid.mid(2).toUInt(NULL, 16);
 		else
 			t_id = t_sid.toUInt();
-		m_finalMap.insert(t_id, t_str);
+		m_finalIdMap.insert(t_id, t_str);
+		m_finalStrMap.insert(t_str, t_id);
 		t_publicDom = t_publicDom.nextSiblingElement("public");
 	}
 	t_ReadFile.close();

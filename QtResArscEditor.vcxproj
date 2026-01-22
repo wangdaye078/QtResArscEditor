@@ -118,13 +118,17 @@
     <ClCompile Include="src\common\utf8.cpp" />
     <ClCompile Include="src\GuidFactory.cpp" />
     <ClCompile Include="src\QAddLocaleDialog.cpp" />
+    <ClCompile Include="src\QAndroidAttribute.cpp" />
+    <ClCompile Include="src\QAndroidParser.cpp" />
     <ClCompile Include="src\QAppendDialog.cpp" />
     <ClCompile Include="src\QArscString.cpp" />
     <ClCompile Include="src\QEditDialog.cpp" />
+    <ClCompile Include="src\QManifestParser.cpp" />
     <ClCompile Include="src\QPublicFinal.cpp" />
     <ClCompile Include="src\QResArscEditor.cpp" />
     <ClCompile Include="src\QResArscEditorUI.cpp" />
     <ClCompile Include="src\QResArscParser.cpp" />
+    <ClCompile Include="src\QResXmlTree.cpp" />
     <ClCompile Include="src\QStringPool.cpp" />
     <ClCompile Include="src\QTablePackage.cpp" />
     <ClCompile Include="src\QTableType.cpp" />
@@ -137,6 +141,10 @@
     <QtMoc Include="src\QResArscParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="src\QAndroidAttribute.h" />
+    <ClInclude Include="src\QAndroidParser.h" />
+    <QtMoc Include="src\QManifestParser.h" />
+    <ClInclude Include="src\QResXmlTree.h" />
     <ClInclude Include="src\QTablePackage.h" />
   </ItemGroup>
   <ItemGroup>

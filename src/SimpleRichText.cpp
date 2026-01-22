@@ -1,7 +1,7 @@
-#include "SimpleRichText.h"
 #include "QStringPool.h"
-#include <QRegExp>
+#include "SimpleRichText.h"
 #include <iterator>
+#include <QRegExp>
 
 QString encodeRichText(const TArscRichString* _input)
 {
@@ -33,7 +33,7 @@ QString encodeRichText(const TArscRichString* _input)
 
 QRegExp g_rBeing("<([a-zA-Z]+)>");
 QRegExp g_rend("<(/[a-zA-Z]+)>");
-void decodeRichText(QString& _input, QVector<TArscStringStyle>& _spans, int _endPos)
+void decodeRichText(QStringPool* _stringPool, QString& _input, QVector<TArscStringStyle>& _spans, int _endPos)
 {
 	if (_endPos == -1)
 		_endPos = _input.length();
@@ -47,8 +47,8 @@ void decodeRichText(QString& _input, QVector<TArscStringStyle>& _spans, int _end
 		//ResStringPool_span& t_span = _spans.spans.last();
 		PArscRichString t_tag_tmp(new TArscRichString());
 		t_tag_tmp->string = g_rBeing.capturedTexts()[1];
-		Q_ASSERT(g_publicStrPool->getRefCount(t_tag_tmp) != 0);
-		_spans[t_lastIdx].ref = g_publicStrPool->getRichString(t_tag_tmp);
+		Q_ASSERT(_stringPool->getRefCount(t_tag_tmp) != 0);
+		_spans[t_lastIdx].ref = _stringPool->getRichString(t_tag_tmp);
 		_spans[t_lastIdx].firstChar = t_bPos;
 
 		int t_matchedLength = g_rBeing.matchedLength();
@@ -60,7 +60,7 @@ void decodeRichText(QString& _input, QVector<TArscStringStyle>& _spans, int _end
 		int t_subbpos = 0;
 		while ((t_subbpos = g_rBeing.indexIn(_input)) != -1 && t_subbpos < t_ePos)		//中间还有
 		{
-			decodeRichText(_input, _spans, t_ePos);
+			decodeRichText(_stringPool, _input, _spans, t_ePos);
 			t_ePos = _input.indexOf(t_endtag);
 		}
 		_input.remove(t_ePos, t_endtag.length());
@@ -68,12 +68,10 @@ void decodeRichText(QString& _input, QVector<TArscStringStyle>& _spans, int _end
 		_spans[t_lastIdx].lastChar = t_ePos - 1;
 	}
 }
-TArscRichString* decodeRichText(const QString& _input)
+TArscRichString* decodeRichText(QStringPool* _stringPool, const QString& _input)
 {
 	TArscRichString* t_richString = new TArscRichString();
-	t_richString->guid = 0;
-	t_richString->index = 0;
 	t_richString->string = _input;
-	decodeRichText(t_richString->string, t_richString->styles, -1);
+	decodeRichText(_stringPool, t_richString->string, t_richString->styles, -1);
 	return t_richString;
 }

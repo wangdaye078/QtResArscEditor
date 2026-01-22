@@ -8,42 +8,34 @@
 #define QResArscParser_h__
 
 #include "GuidFactory.h"
-#include "QPublicFinal.h"
-#include "QStringPool.h"
+#include "QAndroidParser.h"
 #include "QTablePackage.h"
 #include <QMap>
-#include <QObject>
 
 using TTRAVERSAL_ALL_TABLEPACKAGE = std::function< void(const QString&, const PTablePackage&) >;
 struct zip_source;
 
-class QResArscParser : public QObject
+class QResArscParser : public QAndroidParser
 {
 	Q_OBJECT
-
 public:
 	QResArscParser(QObject* _parent);
 	QResArscParser(const QResArscParser&) = delete;
 	QResArscParser& operator=(const QResArscParser&) = delete;
 	~QResArscParser();
+	RES_TYPE getParserType(void) const;
+	const QString& getBinFileSuffix(void) const;
+	const char* getBinFileName(void) const;
+	void traversalSubItems(void);
+	void setTraversalAllTablePackageFunc(TTRAVERSAL_ALL_TABLEPACKAGE _callBack);
+private:
 	void reset(void);
-	bool readFile(const QString& _path);
 	bool readBuff(const QByteArray& _buff);
-	bool writeFile(const QString& _path);
 	void writeBuff(QByteArray& _buff);
 	void traversalAllTablePackage(TTRAVERSAL_ALL_TABLEPACKAGE _callBack);
 private:
-	bool readApkFile(const QString& _path);
-	bool readApkFile(const QByteArray& _buff);
-	bool readArscFile(const QString& _path);
-	bool writeApkFile(const QString& _path);
-	bool updateApkFileBuff(void);
-	bool writeArscFile(const QString& _path);
-private:
-	QPublicFinal* m_publicFinal;
-	QStringPool* m_stringPool;
+	TTRAVERSAL_ALL_TABLEPACKAGE m_traversalAllTablePackageFunc;
 	QMap<QString, PTablePackage> m_tablePackages;
-	QByteArray m_fileBuff;
 };
 
 #endif // QResArscParser_h__

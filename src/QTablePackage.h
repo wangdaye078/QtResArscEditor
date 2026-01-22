@@ -7,17 +7,17 @@
 #ifndef QTablePackage_h__
 #define QTablePackage_h__
 
-#include <QObject>
-#include <QSharedPointer>
 #include "QStringPool.h"
 #include "QTableType.h"
+#include <QObject>
+#include <QSharedPointer>
 #include <QVariant>
 
 
 class QTablePackage : public QObject
 {
 public:
-	QTablePackage(QObject* _parent = NULL);
+	QTablePackage(QAndroidParser* _parent);
 	QTablePackage(const QTablePackage&) = delete;
 	QTablePackage& operator=(const QTablePackage&) = delete;
 	~QTablePackage();
@@ -28,10 +28,11 @@ public:
 	void traversalData(TRAVERSE_PACKAGE_DATA_CALLBACK _callBack) const;
 	QString getKeyString(const QString& _prefix, bool _addtype, uint32_t _index) const;
 	QString getTypeString(uint32_t _index) const;
-	QString getReference(const ResTable_config& _config, qint32 _data) const;
+	//QString getReference(const ResTable_config& _config, qint32 _data) const;
 	uint32_t keyGuidToIndex(uint32_t _guid) const;
 	const ResTable_package& packageInfo(void) const;
 private:
+	QAndroidParser* m_parentParser;
 	ResTable_package m_packageInfo;
 	QStringPool m_typeStringPool;		//anim,array,string这些类型字符串，key-1才是索引值
 	QStringPool m_keyStringPool;		//每个值的名字，key就是索引

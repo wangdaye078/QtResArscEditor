@@ -1,11 +1,11 @@
 #include "common/basicDefine.h"
+#include "QAndroidParser.h"
 #include "QPublicFinal.h"
 #include "QTablePackage.h"
 #include "SimpleRichText.h"
-
-QTablePackage::QTablePackage(QObject* _parent)
-	: QObject(_parent), m_packageInfo(), m_typeStringPool("TypeStringPool", false),
-	m_keyStringPool("KeyStringPool", false)
+QTablePackage::QTablePackage(QAndroidParser* _parent)
+	: QObject(_parent), m_parentParser(_parent), m_packageInfo(), m_typeStringPool("TypeStringPool", false, false),
+	m_keyStringPool("KeyStringPool", false, false)
 {
 }
 
@@ -33,9 +33,9 @@ void QTablePackage::readBuff(const char* _pBegin)
 		{
 		case RES_TYPE::RES_STRING_POOL_TYPE:
 			if (t_pBuff == _pBegin + m_packageInfo.keyStrings)
-				m_keyStringPool.readBuff(t_pBuff);
+				m_keyStringPool.readBuff(t_pBuff, QVector<uint32_t>());
 			else if (t_pBuff == _pBegin + m_packageInfo.typeStrings)
-				m_typeStringPool.readBuff(t_pBuff);
+				m_typeStringPool.readBuff(t_pBuff, QVector<uint32_t>());
 			else
 				Q_ASSERT(false);
 			break;
@@ -43,7 +43,7 @@ void QTablePackage::readBuff(const char* _pBegin)
 			{
 				uint t_id = (*reinterpret_cast<const ResTable_typeSpec*>(t_pBuff)).id;//id代表什么资源，是string还array等
 				if (!m_tableType.contains(t_id))
-					m_tableType.insert(t_id, PTableType(new QTableType(this)));
+					m_tableType.insert(t_id, PTableType(new QTableType(m_parentParser)));
 				m_tableType[t_id]->readBuff_head(t_pBuff);
 			}
 			break;
@@ -71,7 +71,7 @@ void QTablePackage::writeBuff(QByteArray& _buff)
 	m_keyStringPool.writeBuff(_buff);
 	for (QMap<uint32_t, PTableType>::const_iterator i = m_tableType.begin(); i != m_tableType.end(); ++i)
 	{
-		i.value()->writeBuff(this, _buff);
+		i.value()->writeBuff(&m_keyStringPool, _buff);
 	}
 	reinterpret_cast<ResTable_package*>(_buff.data() + t_tablePackageHeader_pos)->header.size = _buff.size() - t_tablePackageHeader_pos;
 }
@@ -107,6 +107,7 @@ QString QTablePackage::getTypeString(uint32_t _index) const
 {
 	return m_typeStringPool.getGuidRef(_index)->string;
 }
+/*
 void onTraversalSpec(TSpecificData** t_specData, const ResTable_config& _config, const QString& _packageName, ETreeItemType _type, uint32_t _typeId, const QString& _name, const QVariant& _v)
 {
 	PSpecificData t_pSpecificData = _v.value<PSpecificData>();
@@ -117,8 +118,10 @@ void onTraversalSpec(TSpecificData** t_specData, const ResTable_config& _config,
 QString QTablePackage::getReference(const ResTable_config& _config, qint32 _data) const
 {
 	if ((_data >> 24) == 1 && (_data & 0xFF0000) != 0)
+		//0x01xxxxxx，表示public资源
 		return g_publicFinal->getDataName(_data)->string;
 	else if ((_data >> 24) == 1 && (_data & 0xFF0000) == 0)
+		//0x0100xxxx
 		return QString("0x%1").arg(_data, 8, 16, QChar('0'));
 	else
 	{
@@ -154,7 +157,7 @@ QString QTablePackage::getReference(const ResTable_config& _config, qint32 _data
 				else if (t_pValueEntry->value.dataType == Res_value::_DataType::TYPE_STRING)
 					return QString("@%1/%2").arg(m_typeStringPool.getGuidRef(t_typeID - 1)->string).arg(encodeRichText(t_pValueEntry->svalue.get()));
 				else
-					return resValue2String(t_pValueEntry->value, t_pValueEntry->svalue);
+					return resValue2String("", t_pValueEntry->value, t_pValueEntry->svalue);
 			}
 			break;
 		default:
@@ -165,6 +168,7 @@ QString QTablePackage::getReference(const ResTable_config& _config, qint32 _data
 		}
 	}
 }
+*/
 uint32_t QTablePackage::keyGuidToIndex(uint32_t _guid) const
 {
 	return m_keyStringPool.getRefIndex(m_keyStringPool.getGuidRef(_guid));

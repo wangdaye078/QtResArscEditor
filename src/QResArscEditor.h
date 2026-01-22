@@ -9,7 +9,7 @@
 #include "QResArscEditorUI.h"
 #include "QTablePackage.h"
 
-class QResArscParser;
+class QAndroidParser;
 class QMenu;
 
 enum ETreeItemRole
@@ -39,16 +39,31 @@ private:
 	void onAddAllValueTriggered_slot(void);
 	void onDeleteValueTriggered_slot(void);
 	void onEditValueTriggered_slot(void);
+	void onAddAttributeTriggered_slot(void);
+	void onDeleteAttributeTriggered_slot(void);
 	void onAddLocaleTriggered_slot(void);
 	void onExportLocaleTriggered_slot(void);
 	void onImportLocaleTriggered_slot(void);
+	void onAppendSubElementTriggered_slot(void);
+	void onDeleteElementTriggered_slot(void);
+	void onElementMoveTriggered_slot(int _inc);
+	void onExportXmlTriggered_slot(void);
 	void onPrintPublicStringsTriggered_slot(void);
 private:
+	void onTreeCurrentItemChanged_slot_TablePackage(QTreeWidgetItem* _current);
+	void onTreeCurrentItemChanged_slot_XmlTree(QTreeWidgetItem* _current);
+	void onShowValueContextMenu_slot_TablePackage(const QPoint& _pos);
+	void onShowValueContextMenu_slot_XmlTree(const QPoint& _pos);
+	void onShowTreeContextMenu_slot_TablePackage(const QPoint& _pos);
+	void onShowTreeContextMenu_slot_XmlTree(const QPoint& _pos);
+	void editValueInit_TablePackage(QTreeWidgetItem* _treeItem, QTreeWidgetItem* _valueItem);
+	void editValueInit_XmlTree(QTreeWidgetItem* _treeItem, QTreeWidgetItem* _valueItem);
 	void onRefreshTablePackage(const QString& _packageName, const PTablePackage& _package);
 	void onRefreshTablePackageData(const QString& _packageName, ETreeItemType _type, uint32_t _typeId, const QString& _name, const QVariant& _v);
 	QTreeWidgetItem* onRefreshSpecificData(const PTablePackage& _package, uint32_t _typeId, QTreeWidgetItem* _parent, uint32_t _idx, EValueItemType _type, const QVariant& _v);
+	QTreeWidgetItem* onRefreshXmlElement(QTreeWidgetItem* _parent, const QVariant& _v);
 private:
-	QResArscParser* m_parser;
+	QAndroidParser* m_parser;
 	QMenu* m_valueMenu;
 	QMenu* m_treeMenu;
 	QString m_basePath;

@@ -2,6 +2,8 @@
     <qresource prefix="/res">
         <file>res/public-final.xml</file>
         <file>res/locale.txt</file>
+        <file>res/attrs.xml</file>
+        <file>res/attrs_manifest.xml</file>
     </qresource>
     <qresource prefix="/icon">
         <file>ico/save.png</file>

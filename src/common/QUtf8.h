@@ -8,6 +8,7 @@
 #define QUtf8_h__
 #include <QString>
 
+extern bool allow_ucs4;
 extern QString utf8_to_QString(const char* _pBuff, quint32 _len);
 extern QByteArray QString_to_utf8(const QString& _str);
 #endif // QUtf8_h__

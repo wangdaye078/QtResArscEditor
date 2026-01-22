@@ -62,11 +62,19 @@ private slots:
 	virtual void onAddAllValueTriggered_slot(void) = 0;
 	virtual void onDeleteValueTriggered_slot(void) = 0;
 	virtual void onEditValueTriggered_slot(void) = 0;
+	virtual void onAddAttributeTriggered_slot(void) = 0;
+	virtual void onDeleteAttributeTriggered_slot(void) = 0;
 	virtual void onAddLocaleTriggered_slot(void) = 0;
 	virtual void onExportLocaleTriggered_slot(void) = 0;
 	virtual void onImportLocaleTriggered_slot(void) = 0;
+	virtual void onAppendSubElementTriggered_slot(void) = 0;
+	virtual void onDeleteElementTriggered_slot(void) = 0;
+	virtual void onElementMoveTriggered_slot(int) = 0;
+	virtual void onExportXmlTriggered_slot(void) = 0;
 	virtual void onPrintPublicStringsTriggered_slot(void) = 0;
 	void onExpandAllTriggered_slot(void);
+	void onExpandTreeTriggered_slot(void);
+	void onAllowUcs4Triggered_slot(bool _checked);
 protected:
 	QLabel* m_LB_filePath;
 	QLineEdit* m_LE_filePath;
@@ -84,11 +92,20 @@ protected:
 	QAction* m_AC_DeleteValue;
 	QAction* m_AC_EditValue;
 	QAction* m_AC_ExpandAll;
+	QAction* m_AC_AddAttribute;
+	QAction* m_AC_DeleteAttribute;
 
 	QAction* m_AC_AddLocale;
 	QAction* m_AC_ExportLocale;
 	QAction* m_AC_ImportLocale;
+	QAction* m_AC_AppendSubElement;
+	QAction* m_AC_DeleteElement;
+	QAction* m_AC_ElementMoveUp;
+	QAction* m_AC_ElementMoveDown;
+	QAction* m_AC_ExportXml;
 	QAction* m_AC_PrintPublicStrings;
+	QAction* m_AC_ExpandTree;
+	QAction* m_AC_AllowUcs4;
 };
 
 #endif // QResArscEditorUI_h__

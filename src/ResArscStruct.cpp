@@ -1,7 +1,7 @@
-#include "ResArscStruct.h"
 #include "common/basicDefine.h"
+#include "ResArscStruct.h"
 #include <QMap>
-const char* DIMENSION_UNIT_STRS[8] = { "px", "dip", "sp", "pt", "in", "mm", "", "" };
+const char* DIMENSION_UNIT_STRS[8] = { "px", "dp", "sp", "pt", "in", "mm", "", "" };
 const char* FRACTION_UNIT_STRS[2] = { "%", "%p" };
 float MANTISSA_MULT = 1.0f / (1 << 8);
 float RADIX_MULTS[4] = { 1.0f * MANTISSA_MULT, 1.0f / (1 << 7) * MANTISSA_MULT,

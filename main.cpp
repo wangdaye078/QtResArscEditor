@@ -47,7 +47,6 @@ void myMessageHandler(QtMsgType _type, const QMessageLogContext& _context, const
 
 	t_out << _msg << "\n";
 }
-
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);

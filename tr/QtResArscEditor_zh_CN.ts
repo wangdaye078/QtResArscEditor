@@ -145,6 +145,62 @@
         <source>OutPut ARSC File</source>
         <translation>输出t ARSC 文件</translation>
     </message>
+    <message>
+        <source>ARSC File (*.arsc *.apk);;xml bin File (*.xml *.apk)</source>
+        <translation>ARSC 文件 (*.arsc *.apk);;xml 二进制文件 (*.xml *.apk)</translation>
+    </message>
+    <message>
+        <source>ARSC File (*.arsc *.apk)</source>
+        <translation>ARSC 文件 (*.arsc *.apk)</translation>
+    </message>
+    <message>
+        <source>xml bin File (*.xml *.apk)</source>
+        <translation>xml 二进制文件 (*.xml *.apk)</translation>
+    </message>
+    <message>
+        <source>File read completed !</source>
+        <translation>文件读取完成！</translation>
+    </message>
+    <message>
+        <source>The specified file read error !</source>
+        <translation>指定文件读取错误！</translation>
+    </message>
+    <message>
+        <source>This APK file needs to be re-signed before it can be installed !</source>
+        <translation>此APK文件在安装前需要重新签名！</translation>
+    </message>
+    <message>
+        <source>Manifest File (*.xml *.apk)</source>
+        <translation>Manifest 文件 (*.xml *.apk)</translation>
+    </message>
+    <message>
+        <source>Manifest File (*.xml)</source>
+        <translation>Manifest 文件 (*.xml)</translation>
+    </message>
+    <message>
+        <source>OutPut Manifest File</source>
+        <translation>输出 Manifest 文件</translation>
+    </message>
+    <message>
+        <source>Add Attribute</source>
+        <translation>添加属性</translation>
+    </message>
+    <message>
+        <source>Attribute Name:</source>
+        <translation>属性名：</translation>
+    </message>
+    <message>
+        <source>Get OutPut xml File</source>
+        <translation>输出的xml文件</translation>
+    </message>
+    <message>
+        <source>Add SubElement</source>
+        <translation>添加子节点</translation>
+    </message>
+    <message>
+        <source>Element Name:</source>
+        <translation>节点名：</translation>
+    </message>
 </context>
 <context>
     <name>QResArscEditorUI</name>
@@ -203,6 +259,50 @@
     <message>
         <source>PrintPublicStrings</source>
         <translation>打印所有公共字符串</translation>
+    </message>
+    <message>
+        <source>AddAttribute</source>
+        <translation>添加属性</translation>
+    </message>
+    <message>
+        <source>DeleteAttribute</source>
+        <translation>删除属性</translation>
+    </message>
+    <message>
+        <source>AppendSubElement</source>
+        <translation>添加子节点</translation>
+    </message>
+    <message>
+        <source>DeleteElement</source>
+        <translation>删除节点</translation>
+    </message>
+    <message>
+        <source>ElementMoveUp</source>
+        <translation>节点上移</translation>
+    </message>
+    <message>
+        <source>ElementMoveDown</source>
+        <translation>节点下移</translation>
+    </message>
+    <message>
+        <source>ExportXml</source>
+        <translation>导出xml文件</translation>
+    </message>
+    <message>
+        <source>AllowUcs4</source>
+        <translation>允许ucs4</translation>
+    </message>
+    <message>
+        <source>Open ARSC File</source>
+        <translation>打开 ARSC 文件</translation>
+    </message>
+    <message>
+        <source>Save ARSC File</source>
+        <translation>保存 ARSC 文件</translation>
+    </message>
+    <message>
+        <source>Save ARSC File As</source>
+        <translation>另存为 ARSC 文件</translation>
     </message>
 </context>
 </TS>

@@ -45,6 +45,10 @@ struct ResTable_header
 	ResChunk_header header;
 	uint32_t packageCount;
 };
+struct ResXMLTree_header
+{
+	struct ResChunk_header header;
+};
 
 struct ResStringPool_header
 {
@@ -416,6 +420,45 @@ struct ResTable_map_entry : public ResTable_entry
 	uint32_t count;
 };
 
+struct ResXMLTree_node
+{
+	struct ResChunk_header header;
+	uint32_t lineNumber;
+	struct ResStringPool_ref comment;
+};
+
+struct ResXMLTree_namespaceExt
+{
+	struct ResStringPool_ref prefix;
+	struct ResStringPool_ref uri;
+};
+
+struct ResXMLTree_endElementExt
+{
+	struct ResStringPool_ref ns;
+	struct ResStringPool_ref name;
+};
+
+struct ResXMLTree_attrExt
+{
+	struct ResStringPool_ref ns;
+	struct ResStringPool_ref name;
+	uint16_t attributeStart;
+	uint16_t attributeSize;
+	uint16_t attributeCount;
+	uint16_t idIndex;
+	uint16_t classIndex;
+	uint16_t styleIndex;
+};
+
+struct ResXMLTree_attribute
+{
+	struct ResStringPool_ref ns;
+	struct ResStringPool_ref name;
+	struct ResStringPool_ref rawValue;
+	struct Res_value typedValue;
+};
+
 #pragma pack(pop)
 
 extern const char* DIMENSION_UNIT_STRS[8];
@@ -440,5 +483,4 @@ extern void initTableConfig(void);
 extern QString tableConfig2String(const QString& _prefix, const ResTable_config& _tableConfig);
 extern uint32_t getTableConfigMask(const ResTable_config& _tableConfig);
 extern void packLanguageOrRegion(const char* _in, int _inlen, char* _out, int _base);
-
 #endif // ResArscStruct_h__
